@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.CourseTypeMapper">
+
+    <resultMap id="BaseResultMap" type="com.company.training.entity.CourseType">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="parent_type_id" property="parentTypeId" jdbcType="BIGINT"/>
+        <result column="type_name" property="typeName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM course_type WHERE deleted = 0
+    </select>
+
+    <select id="selectByParentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT * FROM course_type
+        WHERE parent_type_id = #{parentId} AND deleted = 0
+    </select>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT * FROM course_type
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+</mapper>

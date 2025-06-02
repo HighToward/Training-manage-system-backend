@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.CourseClassMapper"> <resultMap id="CourseClassResultMap" type="com.company.training.entity.CourseClass">
+    <id column="id" property="id" jdbcType="BIGINT"/>
+    <result column="cou_id" property="couId" jdbcType="BIGINT"/>
+    <result column="class_id" property="classId" jdbcType="BIGINT"/>
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+</resultMap>
+
+    <insert id="insert" parameterType="com.company.training.entity.CourseClass" useGeneratedKeys="true" keyProperty="id">
+        insert into course_class (cou_id, class_id, create_time, update_time)
+        values (#{couId, jdbcType=BIGINT}, #{classId, jdbcType=BIGINT}, NOW(), NOW())
+    </insert>
+
+    <delete id="deleteByClassIdAndCourseId">
+        delete from course_class
+        where class_id = #{classId, jdbcType=BIGINT} and cou_id = #{courseId, jdbcType=BIGINT}
+    </delete>
+
+    <delete id="deleteByClassId" parameterType="java.lang.Long">
+        delete from course_class where class_id = #{classId, jdbcType=BIGINT}
+    </delete>
+
+    <select id="getCoursesByClassId" resultMap="com.company.training.mapper.CourseMapper.CourseVOResultMap" parameterType="java.lang.Long">
+        select
+            c.id, c.tea_id, c.cou_name, c.cou_introduction, c.cou_pic,
+            c.cou_type_id, c.cou_par_type_id, c.cou_price, c.cou_cata_num,
+            c.cou_coll_num, c.cou_like_num, c.cou_share_num, c.clicks,
+            c.purchase, c.deleted, c.create_time, c.update_time,
+            t.tea_name as teaName
+        /* 如果 CourseVOResultMap 中定义了 typeName 和 parentTypeName，
+           这里的 SQL 也需要查询出对应的列，例如通过 JOIN course_type 表 */
+        from course c
+                 inner join course_class cc on c.id = cc.cou_id
+                 left join teacher t on c.tea_id = t.id
+        where cc.class_id = #{classId, jdbcType=BIGINT}
+          and c.deleted = 0
+          and (t.deleted = 0 or t.id is null)
+    </select>
+
+    <select id="findByClassId" resultMap="CourseClassResultMap" parameterType="java.lang.Long">
+        select id, cou_id, class_id, create_time, update_time
+        from course_class
+        where class_id = #{classId, jdbcType=BIGINT}
+    </select>
+
+</mapper>

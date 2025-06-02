@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.ChapterMapper">
+    <resultMap id="BaseResultMap" type="com.company.training.entity.Chapter">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="cou_id" property="couId" jdbcType="BIGINT"/>
+        <result column="cha_index" property="chaIndex" jdbcType="INTEGER"/>
+        <result column="cha_title" property="chaTitle" jdbcType="VARCHAR"/>
+        <result column="cha_url" property="chaUrl" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, cou_id, cha_index, cha_title, cha_url,
+        create_time, deleted, update_time
+    </sql>
+
+    <insert id="insert" parameterType="com.company.training.entity.Chapter" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO chapter (cou_id, cha_index, cha_title, cha_url, create_time, deleted, update_time)
+        VALUES (#{couId,jdbcType=BIGINT}, #{chaIndex,jdbcType=INTEGER}, #{chaTitle,jdbcType=VARCHAR},
+                #{chaUrl,jdbcType=VARCHAR}, NOW(), 0, NOW())
+    </insert>
+
+    <select id="selectByCourseId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM chapter
+        WHERE cou_id = #{courseId} AND deleted = 0
+        ORDER BY cha_index ASC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM chapter
+        WHERE deleted = 0
+        ORDER BY cha_index ASC
+    </select>
+
+    <update id="deleteByCourseId" parameterType="java.lang.Long"> UPDATE chapter SET deleted = 1, update_time = NOW()
+                                                                  WHERE cou_id = #{courseId,jdbcType=BIGINT} AND deleted = 0
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.company.training.entity.Chapter">
+        UPDATE chapter
+        SET
+            cou_id = #{couId,jdbcType=BIGINT},
+            cha_index = #{chaIndex,jdbcType=INTEGER},
+            cha_title = #{chaTitle,jdbcType=VARCHAR},
+            cha_url = #{chaUrl,jdbcType=VARCHAR},
+            update_time = NOW()
+        WHERE
+            id = #{id,jdbcType=BIGINT} AND deleted = 0
+    </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM chapter
+        WHERE id = #{id,jdbcType=BIGINT} AND deleted = 0
+    </select>
+
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        UPDATE chapter
+        SET
+            deleted = 1,
+            update_time = NOW()
+        WHERE
+            id = #{id,jdbcType=BIGINT} AND deleted = 0
+    </update>
+
+</mapper>

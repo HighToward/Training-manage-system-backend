@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.StudentMapper">
+
+    <resultMap id="BaseResultMap" type="com.company.training.entity.Student">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="stu_name" property="stuName" jdbcType="VARCHAR"/>
+        <result column="stu_study_time" property="stuStudyTime" jdbcType="BIGINT"/>
+        <result column="stu_score" property="stuScore" jdbcType="BIGINT"/>
+        <result column="clock" property="clock" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_id, stu_name, stu_study_time, stu_score, clock,
+        create_time, deleted, update_time
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from student
+        where id = #{id,jdbcType=BIGINT} and deleted = 0
+    </select>
+
+    <select id="selectAllActiveStudents" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from student
+        where deleted = 0
+        order by stu_name ASC </select>
+
+    <select id="selectByCondition" resultMap="BaseResultMap" parameterType="com.company.training.entity.vo.StudentQueryVO">
+        select
+        <include refid="Base_Column_List"/>
+        from student
+        where deleted = 0
+        <if test="stuName != null and stuName != ''">
+            and stu_name like concat('%', #{stuName,jdbcType=VARCHAR}, '%')
+        </if>
+        order by create_time desc
+    </select>
+
+    <insert id="insert" parameterType="com.company.training.entity.Student" useGeneratedKeys="true" keyProperty="id">
+        insert into student (user_id, stu_name, stu_study_time, stu_score, clock,
+                             create_time, deleted, update_time)
+        values (#{userId,jdbcType=BIGINT}, #{stuName,jdbcType=VARCHAR}, #{stuStudyTime,jdbcType=BIGINT},
+                #{stuScore,jdbcType=BIGINT}, #{clock,jdbcType=VARCHAR},
+                NOW(), 0, NOW())
+    </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com.company.training.entity.Student">
+        update student
+        set user_id = #{userId,jdbcType=BIGINT},
+            stu_name = #{stuName,jdbcType=VARCHAR},
+            stu_study_time = #{stuStudyTime,jdbcType=BIGINT},
+            stu_score = #{stuScore,jdbcType=BIGINT},
+            clock = #{clock,jdbcType=VARCHAR},
+            update_time = NOW()
+        where id = #{id,jdbcType=BIGINT} and deleted = 0
+    </update>
+
+    <update id="logicalDeleteByPrimaryKey" parameterType="java.lang.Long">
+        update student
+        set deleted = 1, update_time = NOW()
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+</mapper>

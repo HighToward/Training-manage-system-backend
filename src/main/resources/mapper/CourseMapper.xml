@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.CourseMapper">
+    <resultMap id="BaseResultMap" type="com.company.training.entity.Course">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="tea_id" property="teaId" jdbcType="BIGINT"/>
+        <result column="cou_name" property="couName" jdbcType="VARCHAR"/>
+        <result column="cou_introduction" property="couIntroduction" jdbcType="VARCHAR"/>
+        <result column="cou_pic" property="couPic" jdbcType="VARCHAR"/>
+        <result column="cou_type_id" property="couTypeId" jdbcType="BIGINT"/>
+        <result column="cou_par_type_id" property="couParTypeId" jdbcType="BIGINT"/>
+        <result column="cou_price" property="couPrice" jdbcType="DECIMAL"/>
+        <result column="cou_cata_num" property="couCataNum" jdbcType="INTEGER"/>
+        <result column="cou_coll_num" property="couCollNum" jdbcType="BIGINT"/>
+        <result column="cou_like_num" property="couLikeNum" jdbcType="BIGINT"/>
+        <result column="cou_share_num" property="couShareNum" jdbcType="BIGINT"/>
+        <result column="clicks" property="clicks" jdbcType="BIGINT"/>
+        <result column="purchase" property="purchase" jdbcType="BIGINT"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="CourseVOResultMap" type="com.company.training.entity.vo.CourseVO" extends="BaseResultMap"> <result column="teaName" property="teaName" jdbcType="VARCHAR"/>
+        <result column="typeName" property="typeName" jdbcType="VARCHAR"/>
+        <result column="parentTypeName" property="parentTypeName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, tea_id, cou_name, cou_introduction, cou_pic, cou_type_id, cou_par_type_id,
+        cou_price, cou_cata_num, cou_coll_num, cou_like_num, cou_share_num, clicks,
+        purchase, deleted, create_time, update_time
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from course
+        where id = #{id,jdbcType=BIGINT} and deleted = 0
+    </select>
+
+    <select id="selectByCondition" resultMap="BaseResultMap" parameterType="com.company.training.entity.vo.CourseQueryVO">
+        select
+        <include refid="Base_Column_List"/>
+        from course
+        where deleted = 0
+        <if test="couName != null and couName != ''">
+            and cou_name like concat('%', #{couName,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="couTypeIds != null and couTypeIds.size() > 0">
+            <choose>
+                <when test="couTypeIds.size() == 1">
+                    and (cou_type_id = #{couTypeIds[0]} or cou_par_type_id = #{couTypeIds[0]})
+                </when>
+                <otherwise>
+                    and cou_type_id = #{couTypeIds[couTypeIds.size()-1]}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="teaId != null">
+            and tea_id = #{teaId,jdbcType=BIGINT}
+        </if>
+        order by create_time desc
+    </select>
+
+    <select id="countByCondition" resultType="java.lang.Integer" parameterType="com.company.training.entity.vo.CourseQueryVO">
+        select count(*)
+        from course
+        where deleted = 0
+        <if test="couName != null and couName != ''">
+            and cou_name like concat('%', #{couName,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="couTypeIds != null and couTypeIds.size() > 0">
+            <choose>
+                <when test="couTypeIds.size() == 1">
+                    and (cou_type_id = #{couTypeIds[0]} or cou_par_type_id = #{couTypeIds[0]})
+                </when>
+                <otherwise>
+                    and cou_type_id = #{couTypeIds[couTypeIds.size()-1]}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="teaId != null">
+            and tea_id = #{teaId,jdbcType=BIGINT}
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="com.company.training.entity.Course" useGeneratedKeys="true" keyProperty="id">
+        insert into course (tea_id, cou_name, cou_introduction,
+                            cou_pic, cou_type_id, cou_par_type_id, cou_price,
+                            cou_cata_num, cou_coll_num, cou_like_num,
+                            cou_share_num, clicks, purchase,
+                            deleted, create_time, update_time)
+        values (#{teaId,jdbcType=BIGINT}, #{couName,jdbcType=VARCHAR}, #{couIntroduction,jdbcType=VARCHAR},
+                #{couPic,jdbcType=VARCHAR}, #{couTypeId,jdbcType=BIGINT}, #{couParTypeId,jdbcType=BIGINT}, #{couPrice,jdbcType=DECIMAL},
+                0, 0, 0,
+                0, 0, 0,
+                0, now(), now())
+    </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com.company.training.entity.Course">
+        update course
+        set tea_id = #{teaId,jdbcType=BIGINT},
+            cou_name = #{couName,jdbcType=VARCHAR},
+            cou_introduction = #{couIntroduction,jdbcType=VARCHAR},
+            cou_pic = #{couPic,jdbcType=VARCHAR},
+            cou_type_id = #{couTypeId,jdbcType=BIGINT},
+            cou_par_type_id = #{couParTypeId,jdbcType=BIGINT},
+            cou_price = #{couPrice,jdbcType=DECIMAL},
+            update_time = now()
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateChapterNum">
+        update course
+        set cou_cata_num = cou_cata_num + #{num},
+            update_time = now()
+        where id = #{courseId}
+    </update>
+
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update course
+        set deleted = 1,
+            update_time = now()
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+</mapper>

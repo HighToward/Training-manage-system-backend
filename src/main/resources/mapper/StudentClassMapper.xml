@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.StudentClassMapper">
+
+    <resultMap id="StudentClassResultMap" type="com.company.training.entity.StudentClass">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="stu_id" property="stuId" jdbcType="BIGINT"/>
+        <result column="class_id" property="classId" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.company.training.entity.StudentClass" useGeneratedKeys="true" keyProperty="id">
+        insert into student_class (stu_id, class_id, create_time, update_time)
+        values (#{stuId,jdbcType=BIGINT}, #{classId,jdbcType=BIGINT}, NOW(), NOW())
+    </insert>
+
+    <delete id="delete">
+        delete from student_class
+        where class_id = #{classId,jdbcType=BIGINT} and stu_id = #{studentId,jdbcType=BIGINT}
+    </delete>
+
+    <delete id="deleteByClassId" parameterType="java.lang.Long">
+        delete from student_class where class_id = #{classId,jdbcType=BIGINT}
+    </delete>
+
+    <select id="findStudentsByClassId" resultMap="com.company.training.mapper.StudentMapper.BaseResultMap" parameterType="java.lang.Long">
+        select s.id, s.user_id, s.stu_name, s.stu_study_time, s.stu_score, s.clock, s.create_time, s.deleted, s.update_time
+        from student s
+                 inner join student_class sc on s.id = sc.stu_id
+        where sc.class_id = #{classId,jdbcType=BIGINT} and s.deleted = 0
+    </select>
+
+    <select id="findByClassId" resultMap="StudentClassResultMap" parameterType="java.lang.Long">
+        select id, stu_id, class_id, create_time, update_time
+        from student_class
+        where class_id = #{classId,jdbcType=BIGINT}
+    </select>
+
+</mapper>
