@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.InformationCommentsMapper">
+    <resultMap id="BaseResultMap" type="com.company.training.entity.InformationComments">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="info_id" property="infoId" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="info_like_num" property="infoLikeNum" jdbcType="BIGINT"/>
+        <result column="at_id" property="atId" jdbcType="BIGINT"/>
+        <result column="parent_comments_id" property="parentCommentsId" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, info_id, user_id, content, info_like_num, at_id, parent_comments_id,
+        create_time, update_time, deleted
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from information_comments
+        where id = #{id,jdbcType=BIGINT} and deleted = 0
+    </select>
+
+    <select id="selectByInfoId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from information_comments
+        where info_id = #{infoId,jdbcType=BIGINT} and deleted = 0
+        order by create_time desc
+    </select>
+
+    <select id="selectByParentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from information_comments
+        where parent_comments_id = #{parentCommentsId,jdbcType=BIGINT} and deleted = 0
+        order by create_time asc
+    </select>
+
+    <select id="countByInfoId" resultType="java.lang.Integer" parameterType="java.lang.Long">
+        select count(*)
+        from information_comments
+        where info_id = #{infoId,jdbcType=BIGINT} and deleted = 0
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update information_comments
+        set deleted = 1
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.company.training.entity.InformationComments">
+        <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into information_comments (info_id, user_id, content,
+                                         info_like_num, at_id, parent_comments_id,
+                                         create_time, update_time, deleted)
+        values (#{infoId,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT}, #{content,jdbcType=VARCHAR},
+                #{infoLikeNum,jdbcType=BIGINT}, #{atId,jdbcType=BIGINT}, #{parentCommentsId,jdbcType=BIGINT},
+                #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=INTEGER})
+    </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com.company.training.entity.InformationComments">
+        update information_comments
+        set info_id = #{infoId,jdbcType=BIGINT},
+            user_id = #{userId,jdbcType=BIGINT},
+            content = #{content,jdbcType=VARCHAR},
+            info_like_num = #{infoLikeNum,jdbcType=BIGINT},
+            at_id = #{atId,jdbcType=BIGINT},
+            parent_comments_id = #{parentCommentsId,jdbcType=BIGINT},
+            update_time = #{updateTime,jdbcType=TIMESTAMP}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateLikeCount">
+        update information_comments
+        set info_like_num = #{count,jdbcType=BIGINT},
+            update_time = now()
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+</mapper>

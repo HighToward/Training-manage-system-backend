@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.InformationLikeMapper">
+    <resultMap id="BaseResultMap" type="com.company.training.entity.InformationLike">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="stu_id" property="stuId" jdbcType="BIGINT"/>
+        <result column="info_id" property="infoId" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, stu_id, info_id, create_time, deleted, update_time
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from information_like
+        where id = #{id,jdbcType=BIGINT} and deleted = 0
+    </select>
+
+    <select id="selectByStuIdAndInfoId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from information_like
+        where stu_id = #{stuId,jdbcType=BIGINT} and info_id = #{infoId,jdbcType=BIGINT} and deleted = 0
+    </select>
+
+    <select id="countByInfoId" resultType="java.lang.Integer" parameterType="java.lang.Long">
+        select count(*)
+        from information_like
+        where info_id = #{infoId,jdbcType=BIGINT} and deleted = 0
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update information_like
+        set deleted = 1
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <delete id="deleteByStuIdAndInfoId">
+        update information_like
+        set deleted = 1
+        where stu_id = #{stuId,jdbcType=BIGINT} and info_id = #{infoId,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.company.training.entity.InformationLike">
+        <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into information_like (stu_id, info_id, create_time,
+                                     deleted, update_time)
+        values (#{stuId,jdbcType=BIGINT}, #{infoId,jdbcType=BIGINT}, #{createTime,jdbcType=TIMESTAMP},
+                #{deleted,jdbcType=INTEGER}, #{updateTime,jdbcType=TIMESTAMP})
+    </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com.company.training.entity.InformationLike">
+        update information_like
+        set stu_id = #{stuId,jdbcType=BIGINT},
+            info_id = #{infoId,jdbcType=BIGINT},
+            update_time = #{updateTime,jdbcType=TIMESTAMP}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+</mapper>
