@@ -3,7 +3,6 @@ package com.company.training.service;
 import com.company.training.entity.Information;
 import com.company.training.entity.InformationCollection;
 import com.company.training.entity.InformationComments;
-import com.company.training.entity.InformationLike;
 
 import java.util.List;
 

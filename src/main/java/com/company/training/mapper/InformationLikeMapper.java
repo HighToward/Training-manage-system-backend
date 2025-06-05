@@ -3,8 +3,6 @@ package com.company.training.mapper;
 import com.company.training.entity.InformationLike;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-
 public interface InformationLikeMapper {
     int deleteByPrimaryKey(Long id);
     
