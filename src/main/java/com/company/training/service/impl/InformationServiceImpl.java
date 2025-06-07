@@ -58,6 +58,18 @@ public class InformationServiceImpl implements InformationService {
     @Override
     public Information updateInformation(Information information) {
         information.setUpdateTime(new Date());
+        
+        // 确保统计字段不为 null，如果为 null 则设置为 0
+        if (information.getInfoLike() == null) {
+            information.setInfoLike(0L);
+        }
+        if (information.getInfoCollection() == null) {
+            information.setInfoCollection(0L);
+        }
+        if (information.getInfoComment() == null) {
+            information.setInfoComment(0L);
+        }
+        
         informationMapper.updateByPrimaryKey(information);
         return information;
     }

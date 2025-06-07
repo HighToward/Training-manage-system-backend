@@ -91,6 +91,73 @@ public class FileUploadController {
     }
 
     // 可以添加其他文件类型的上传方法
-    // @PostMapping("/image")
-    // public Result<String> uploadImage(@RequestParam("file") MultipartFile file) { ... }
+    @PostMapping("/image")
+    public Result<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        logger.info("接收到图片上传请求，原始文件名: {}, 大小: {} bytes", file.getOriginalFilename(), file.getSize());
+        logger.info("配置文件中 uploadDir: {}", uploadDir);
+
+        if (file.isEmpty()) {
+            logger.warn("上传失败: 文件为空。");
+            return Result.error("上传文件不能为空");
+        }
+
+        // 验证文件类型（可选）
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename != null) {
+            String lowerCaseFilename = originalFilename.toLowerCase();
+            if (!lowerCaseFilename.endsWith(".jpg") && !lowerCaseFilename.endsWith(".jpeg") && 
+                !lowerCaseFilename.endsWith(".png") && !lowerCaseFilename.endsWith(".gif")) {
+                return Result.error("只支持 JPG、JPEG、PNG、GIF 格式的图片");
+            }
+        }
+
+        try {
+            File uploadPath = new File(uploadDir);
+            logger.info("尝试使用的上传目录绝对路径: {}", uploadPath.getAbsolutePath());
+
+            if (!uploadPath.exists()) {
+                logger.info("上传目录不存在，尝试创建: {}", uploadPath.getAbsolutePath());
+                if (uploadPath.mkdirs()) {
+                    logger.info("目录创建成功: {}", uploadPath.getAbsolutePath());
+                } else {
+                    logger.error("创建上传目录失败: {}. 请检查路径和权限。", uploadPath.getAbsolutePath());
+                    return Result.error("服务器错误: 无法创建上传目录。");
+                }
+            } else {
+                logger.info("上传目录已存在: {}", uploadPath.getAbsolutePath());
+            }
+
+            if (!uploadPath.isDirectory() || !uploadPath.canWrite()) {
+                logger.error("上传目录无效或不可写: {}", uploadPath.getAbsolutePath());
+                return Result.error("服务器配置错误: 上传目录无效或不可写。");
+            }
+
+            String fileExtension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+            String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
+            File dest = new File(uploadPath, uniqueFileName);
+
+            logger.info("准备将图片保存到: {}", dest.getAbsolutePath());
+            file.transferTo(dest);
+
+            if (dest.exists() && dest.length() > 0) {
+                logger.info("图片成功保存到: {}, 大小: {} bytes", dest.getAbsolutePath(), dest.length());
+                String fileUrl = "/uploads/" + uniqueFileName;
+                logger.info("返回给前端的图片URL: {}", fileUrl);
+                return Result.success(fileUrl);
+            } else {
+                logger.error("调用 transferTo 后，图片文件不存在或大小为0: {}", dest.getAbsolutePath());
+                return Result.error("图片保存操作失败，请检查服务器日志。");
+            }
+
+        } catch (IOException e) {
+            logger.error("图片上传时发生IO异常: {}", e.getMessage(), e);
+            return Result.error("图片上传失败: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("处理图片上传请求时发生未知错误: {}", e.getMessage(), e);
+            return Result.error("服务器内部错误，请稍后重试。");
+        }
+    }
 }

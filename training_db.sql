@@ -291,7 +291,7 @@ INSERT INTO `image_violations` VALUES (43002, 1002, 3, 35002, 2, 'https://exampl
 -- ----------------------------
 DROP TABLE IF EXISTS `information`;
 CREATE TABLE `information`  (
-  `id` bigint NOT NULL COMMENT '资讯ID',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '资讯ID',
   `tea_id` bigint NOT NULL COMMENT '教师ID',
   `info_title` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '资讯标题',
   `info_main` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '资讯正文内容',
