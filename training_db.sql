@@ -337,7 +337,7 @@ INSERT INTO `information_collection` VALUES (27002, 1002, 26002, '2023-02-27 10:
 -- ----------------------------
 DROP TABLE IF EXISTS `information_comments`;
 CREATE TABLE `information_comments`  (
-  `id` bigint NOT NULL COMMENT '评论ID',
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '评论ID',
   `info_id` bigint NOT NULL COMMENT '资讯ID',
   `user_id` bigint NOT NULL COMMENT '评论用户ID',
   `content` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '评论内容',

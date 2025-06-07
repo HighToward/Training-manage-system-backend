@@ -164,6 +164,14 @@ public class InformationServiceImpl implements InformationService {
         comment.setCreateTime(new Date());
         comment.setDeleted(0);
         comment.setInfoLikeNum(0L);
+        // 设置默认值以避免 NOT NULL 约束错误
+        if (comment.getAtId() == null) {
+            comment.setAtId(0L); // 0表示未@任何人
+        }
+        if (comment.getParentCommentsId() == null) {
+            comment.setParentCommentsId(0L); // 0表示一级评论
+        }
+        
         informationCommentsMapper.insert(comment);
         
         // 更新资讯评论数
