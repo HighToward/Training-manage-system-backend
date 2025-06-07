@@ -13,15 +13,33 @@
         <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
+    <!-- 新增：包含用户头像的结果映射 -->
+    <resultMap id="TeacherWithUserResultMap" type="com.company.training.entity.Teacher">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="tea_name" property="teaName" jdbcType="VARCHAR"/>
+        <result column="cours_num" property="coursNum" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="pic" property="pic" jdbcType="VARCHAR"/>
+    </resultMap>
+
     <sql id="Base_Column_List">
         id, user_id, tea_name, cours_num, create_time, deleted, update_time
     </sql>
 
-    <select id="selectAll" resultMap="BaseResultMap">
-        SELECT
-        <include refid="Base_Column_List"/>
-        FROM teacher
-        WHERE deleted = 0
+    <!-- 新增：包含用户头像的列列表 -->
+    <sql id="Teacher_With_User_Column_List">
+        t.id, t.user_id, t.tea_name, t.cours_num, t.create_time, t.deleted, t.update_time, u.pic
+    </sql>
+
+    <select id="selectAll" resultMap="TeacherWithUserResultMap">
+        SELECT 
+        <include refid="Teacher_With_User_Column_List"/>
+        FROM teacher t
+        LEFT JOIN user u ON t.user_id = u.id
+        WHERE t.deleted = 0
     </select>
 
     <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
@@ -30,4 +48,21 @@
         FROM teacher
         WHERE id = #{id} AND deleted = 0
     </select>
+    
+    <!-- 根据用户ID查询教师信息 -->
+    <select id="selectByUserId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM teacher
+        WHERE user_id = #{userId} AND deleted = 0
+    </select>
+    
+    <!-- 更新教师信息 -->
+    <update id="updateByPrimaryKey" parameterType="com.company.training.entity.Teacher">
+        UPDATE teacher 
+        SET tea_name = #{teaName},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+    
 </mapper>

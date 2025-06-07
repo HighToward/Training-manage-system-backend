@@ -11,5 +11,8 @@ public interface UserMapper {
 
     // 用于更新用户最后登录时间等信息
     int updateUserLoginInfo(User user);
-
+    
+    // 新增方法
+    User findById(@Param("id") Long id);
+    int updateUserProfile(User user);
 }

@@ -7,13 +7,17 @@ import com.company.training.model.LoginResponse;
 import com.company.training.service.AuthService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.UUID;
+import com.company.training.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
 
     public AuthServiceImpl(UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
@@ -36,9 +40,8 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("用户不存在");
         }
 
-
-
-        String token = UUID.randomUUID().toString();
+        // 使用注入的jwtUtil实例
+        String token = jwtUtil.generateToken(user.getId());
 
         LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo(
                 user.getId(),

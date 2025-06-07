@@ -18,10 +18,25 @@
         FROM user
         WHERE username = #{username} AND deleted = 0
     </select>
+    
+    <!-- 新增：根据ID查询用户信息 -->
+    <select id="findById" resultMap="userResultMap">
+        SELECT id, role, username, password, pic, create_time, deleted, update_time
+        FROM user
+        WHERE id = #{id} AND deleted = 0
+    </select>
 
     <!-- 更新用户登录信息，根据新表结构只更新 update_time -->
     <update id="updateUserLoginInfo" parameterType="com.company.training.entity.User">
         UPDATE user SET
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 新增：更新用户个人资料 -->
+    <update id="updateUserProfile" parameterType="com.company.training.entity.User">
+        UPDATE user 
+        SET pic = #{pic},
             update_time = NOW()
         WHERE id = #{id}
     </update>

@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/upload")
@@ -159,5 +161,60 @@ public class FileUploadController {
             logger.error("处理图片上传请求时发生未知错误: {}", e.getMessage(), e);
             return Result.error("服务器内部错误，请稍后重试。");
         }
+    }
+
+    @PostMapping("/avatar")
+    public Result<Map<String, String>> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        logger.info("接收到头像上传请求，原始文件名: {}, 大小: {} bytes", file.getOriginalFilename(), file.getSize());
+        
+        if (file.isEmpty()) {
+            logger.warn("上传失败: 文件为空。");
+            return Result.error("上传文件不能为空");
+        }
+        
+        // 验证文件类型
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || !isImageFile(originalFilename)) {
+            return Result.error("请上传图片文件");
+        }
+        
+        // 验证文件大小 (2MB)
+        if (file.getSize() > 2 * 1024 * 1024) {
+            return Result.error("图片大小不能超过2MB");
+        }
+        
+        try {
+            File uploadPath = new File(uploadDir);
+            if (!uploadPath.exists()) {
+                uploadPath.mkdirs();
+            }
+            
+            String fileExtension = "";
+            if (originalFilename.contains(".")) {
+                fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+            String uniqueFileName = "avatar_" + UUID.randomUUID().toString() + fileExtension;
+            File dest = new File(uploadPath, uniqueFileName);
+            
+            file.transferTo(dest);
+            
+            String fileUrl = "/uploads/" + uniqueFileName;
+            Map<String, String> result = new HashMap<>();
+            result.put("url", fileUrl);
+            
+            logger.info("头像上传成功: {}", fileUrl);
+            return Result.success(result);
+            
+        } catch (IOException e) {
+            logger.error("头像上传失败: {}", e.getMessage(), e);
+            return Result.error("头像上传失败: " + e.getMessage());
+        }
+    }
+
+    private boolean isImageFile(String filename) {
+        String extension = filename.toLowerCase();
+        return extension.endsWith(".jpg") || extension.endsWith(".jpeg") || 
+               extension.endsWith(".png") || extension.endsWith(".gif") || 
+               extension.endsWith(".bmp");
     }
 }
