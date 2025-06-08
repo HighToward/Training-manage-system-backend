@@ -3,6 +3,7 @@ package com.company.training.controller;
 import com.company.training.entity.*;
 import com.company.training.entity.vo.Result;
 import com.company.training.service.InformationService;
+import com.company.training.dto.InformationCommentsDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -163,13 +164,14 @@ public class InformationController {
     }
     
     // 获取资讯评论
-    @GetMapping("/{infoId}/comments")
-    public Result<List<InformationComments>> getCommentsByInfoId(@PathVariable Long infoId) {
+    @GetMapping("/{id}/comments")
+    public Result<List<InformationCommentsDTO>> getCommentsByInfoId(@PathVariable Long id) {
         try {
-            List<InformationComments> comments = informationService.getCommentsByInfoId(infoId);
+            List<InformationCommentsDTO> comments = informationService.getCommentsByInfoIdWithUserInfo(id);
             return Result.success(comments);
         } catch (Exception e) {
-            return Result.error("获取评论失败: " + e.getMessage());
+            e.printStackTrace();
+            return Result.error("获取评论失败");
         }
     }
     

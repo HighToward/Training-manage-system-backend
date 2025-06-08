@@ -1,6 +1,7 @@
 package com.company.training.mapper;
 
 import com.company.training.entity.InformationComments;
+import com.company.training.dto.InformationCommentsDTO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -21,4 +22,7 @@ public interface InformationCommentsMapper {
     int updateLikeCount(@Param("id") Long id, @Param("count") Long count);
     
     int countByInfoId(Long infoId);
+    
+    // 新增：关联查询评论和用户信息
+    List<InformationCommentsDTO> selectByInfoIdWithUserInfo(Long infoId);
 }

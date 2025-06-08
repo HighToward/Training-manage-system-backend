@@ -3,6 +3,7 @@ package com.company.training.service.impl;
 import com.company.training.entity.*;
 import com.company.training.mapper.*;
 import com.company.training.service.InformationService;
+import com.company.training.dto.InformationCommentsDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +48,17 @@ public class InformationServiceImpl implements InformationService {
     
     @Override
     public List<Information> getAllInformation() {
-        return informationMapper.selectAll();
+        List<Information> informationList = informationMapper.selectAll();
+        // 确保评论数是最新的
+        for (Information info : informationList) {
+            Long commentCount = (long) informationCommentsMapper.countByInfoId(info.getId());
+            if (!commentCount.equals(info.getInfoComment())) {
+                // 如果数据库中的评论数与实际不符，更新它
+                informationMapper.updateCommentCount(info.getId(), commentCount);
+                info.setInfoComment(commentCount);
+            }
+        }
+        return informationList;
     }
     
     @Override
@@ -196,6 +207,11 @@ public class InformationServiceImpl implements InformationService {
     @Override
     public List<InformationComments> getCommentsByInfoId(Long infoId) {
         return informationCommentsMapper.selectByInfoId(infoId);
+    }
+    
+    @Override
+    public List<InformationCommentsDTO> getCommentsByInfoIdWithUserInfo(Long infoId) {
+        return informationCommentsMapper.selectByInfoIdWithUserInfo(infoId);
     }
     
     @Override

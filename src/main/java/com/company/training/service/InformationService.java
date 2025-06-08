@@ -3,6 +3,7 @@ package com.company.training.service;
 import com.company.training.entity.Information;
 import com.company.training.entity.InformationCollection;
 import com.company.training.entity.InformationComments;
+import com.company.training.dto.InformationCommentsDTO;
 
 import java.util.List;
 
@@ -40,6 +41,8 @@ public interface InformationService {
     InformationComments createComment(InformationComments comment);
     
     List<InformationComments> getCommentsByInfoId(Long infoId);
+    
+    List<InformationCommentsDTO> getCommentsByInfoIdWithUserInfo(Long infoId);
     
     List<InformationComments> getRepliesByParentId(Long parentId);
     

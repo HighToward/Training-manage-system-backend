@@ -14,11 +14,28 @@
         <result column="deleted" property="deleted" jdbcType="INTEGER"/>
     </resultMap>
 
+    <!-- 新增：DTO结果映射 -->
+    <resultMap id="CommentsWithUserResultMap" type="com.company.training.dto.InformationCommentsDTO">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="info_id" property="infoId" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="info_like_num" property="infoLikeNum" jdbcType="BIGINT"/>
+        <result column="at_id" property="atId" jdbcType="BIGINT"/>
+        <result column="parent_comments_id" property="parentCommentsId" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+        <result column="user_name" property="userName" jdbcType="VARCHAR"/>
+        <result column="user_avatar" property="userAvatar" jdbcType="VARCHAR"/>
+    </resultMap>
+
     <sql id="Base_Column_List">
         id, info_id, user_id, content, info_like_num, at_id, parent_comments_id,
         create_time, update_time, deleted
     </sql>
 
+    <!-- 现有的查询方法保持不变 -->
     <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
         select
         <include refid="Base_Column_List"/>
@@ -32,6 +49,22 @@
         from information_comments
         where info_id = #{infoId,jdbcType=BIGINT} and deleted = 0
         order by create_time desc
+    </select>
+
+    <!-- 新增：关联查询评论和用户信息 -->
+    <select id="selectByInfoIdWithUserInfo" resultMap="CommentsWithUserResultMap" parameterType="java.lang.Long">
+        SELECT 
+            ic.id, ic.info_id, ic.user_id, ic.content, ic.info_like_num, 
+            ic.at_id, ic.parent_comments_id, ic.create_time, ic.update_time, ic.deleted,
+            COALESCE(s.stu_name, t.tea_name, u.username, CONCAT('用户', ic.user_id)) as user_name,
+            u.pic as user_avatar,
+            s.id as student_id
+        FROM information_comments ic
+        LEFT JOIN student s ON ic.user_id = s.user_id
+        LEFT JOIN teacher t ON ic.user_id = t.user_id
+        LEFT JOIN user u ON ic.user_id = u.id
+        WHERE ic.info_id = #{infoId,jdbcType=BIGINT} AND ic.deleted = 0
+        ORDER BY ic.create_time DESC
     </select>
 
     <select id="selectByParentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
