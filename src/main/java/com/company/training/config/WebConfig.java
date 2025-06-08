@@ -26,7 +26,7 @@ public class WebConfig implements WebMvcConfigurer {
                 
     }
 
-    @Value("${file.upload-dir}")
+    @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
     @PostConstruct

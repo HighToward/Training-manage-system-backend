@@ -23,14 +23,20 @@ public class FileUploadController {
 
     private static final Logger logger = LoggerFactory.getLogger(FileUploadController.class);
 
-    // 从配置文件读取文件上传目录
-    @Value("${file.upload-dir:uploads}") // 默认值为 uploads
-    private String uploadDir;
+    // 从配置文件读取不同类型文件的上传目录
+    @Value("${file.upload.video-dir:uploads/video}")
+    private String videoUploadDir;
+    
+    @Value("${file.upload.image-dir:uploads/img}")
+    private String imageUploadDir;
+    
+    @Value("${file.upload.avatar-dir:uploads/avatar}")
+    private String avatarUploadDir;
 
     @PostMapping("/video")
     public Result<String> uploadVideo(@RequestParam("file") MultipartFile file) {
         logger.info("接收到视频上传请求，原始文件名: {}, 大小: {} bytes", file.getOriginalFilename(), file.getSize());
-        logger.info("配置文件中 uploadDir: {}", uploadDir);
+        logger.info("配置文件中 videoUploadDir: {}", videoUploadDir);
 
         if (file.isEmpty()) {
             logger.warn("上传失败: 文件为空。");
@@ -38,27 +44,23 @@ public class FileUploadController {
         }
 
         try {
-            File uploadPath = new File(uploadDir);
-            logger.info("尝试使用的上传目录绝对路径: {}", uploadPath.getAbsolutePath());
+            File uploadPath = new File(videoUploadDir);
+            logger.info("尝试使用的视频上传目录绝对路径: {}", uploadPath.getAbsolutePath());
 
             if (!uploadPath.exists()) {
-                logger.info("上传目录不存在，尝试创建: {}", uploadPath.getAbsolutePath());
+                logger.info("视频上传目录不存在，尝试创建: {}", uploadPath.getAbsolutePath());
                 if (uploadPath.mkdirs()) {
                     logger.info("目录创建成功: {}", uploadPath.getAbsolutePath());
                 } else {
-                    logger.error("创建上传目录失败: {}. 请检查路径和权限。", uploadPath.getAbsolutePath());
+                    logger.error("创建视频上传目录失败: {}. 请检查路径和权限。", uploadPath.getAbsolutePath());
                     return Result.error("服务器错误: 无法创建上传目录。");
                 }
             } else {
-                logger.info("上传目录已存在: {}", uploadPath.getAbsolutePath());
+                logger.info("视频上传目录已存在: {}", uploadPath.getAbsolutePath());
             }
 
-            logger.info("目录是否是文件夹: {}", uploadPath.isDirectory());
-            logger.info("目录是否可读: {}", uploadPath.canRead());
-            logger.info("目录是否可写: {}", uploadPath.canWrite());
-
             if (!uploadPath.isDirectory() || !uploadPath.canWrite()) {
-                logger.error("上传目录无效或不可写: {}", uploadPath.getAbsolutePath());
+                logger.error("视频上传目录无效或不可写: {}", uploadPath.getAbsolutePath());
                 return Result.error("服务器配置错误: 上传目录无效或不可写。");
             }
 
@@ -70,33 +72,32 @@ public class FileUploadController {
             String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
             File dest = new File(uploadPath, uniqueFileName);
 
-            logger.info("准备将文件保存到: {}", dest.getAbsolutePath());
-            file.transferTo(dest); // 核心保存操作
+            logger.info("准备将视频文件保存到: {}", dest.getAbsolutePath());
+            file.transferTo(dest);
 
             if (dest.exists() && dest.length() > 0) {
-                logger.info("文件成功保存到: {}, 大小: {} bytes", dest.getAbsolutePath(), dest.length());
-                String fileUrl = "/uploads/" + uniqueFileName; // URL路径与WebConfig中的映射对应
-                logger.info("返回给前端的文件URL: {}", fileUrl);
+                logger.info("视频文件成功保存到: {}, 大小: {} bytes", dest.getAbsolutePath(), dest.length());
+                String fileUrl = "/uploads/video/" + uniqueFileName;
+                logger.info("返回给前端的视频文件URL: {}", fileUrl);
                 return Result.success(fileUrl);
             } else {
-                logger.error("调用 transferTo 后，文件不存在或大小为0: {}", dest.getAbsolutePath());
+                logger.error("调用 transferTo 后，视频文件不存在或大小为0: {}", dest.getAbsolutePath());
                 return Result.error("文件保存操作失败，请检查服务器日志。");
             }
 
         } catch (IOException e) {
-            logger.error("文件上传时发生IO异常: {}", e.getMessage(), e);
+            logger.error("视频文件上传时发生IO异常: {}", e.getMessage(), e);
             return Result.error("文件上传失败: " + e.getMessage());
         } catch (Exception e) {
-            logger.error("处理上传请求时发生未知错误: {}", e.getMessage(), e);
+            logger.error("处理视频上传请求时发生未知错误: {}", e.getMessage(), e);
             return Result.error("服务器内部错误，请稍后重试。");
         }
     }
 
-    // 可以添加其他文件类型的上传方法
     @PostMapping("/image")
     public Result<String> uploadImage(@RequestParam("file") MultipartFile file) {
         logger.info("接收到图片上传请求，原始文件名: {}, 大小: {} bytes", file.getOriginalFilename(), file.getSize());
-        logger.info("配置文件中 uploadDir: {}", uploadDir);
+        logger.info("配置文件中 imageUploadDir: {}", imageUploadDir);
 
         if (file.isEmpty()) {
             logger.warn("上传失败: 文件为空。");
@@ -114,23 +115,23 @@ public class FileUploadController {
         }
 
         try {
-            File uploadPath = new File(uploadDir);
-            logger.info("尝试使用的上传目录绝对路径: {}", uploadPath.getAbsolutePath());
+            File uploadPath = new File(imageUploadDir);
+            logger.info("尝试使用的图片上传目录绝对路径: {}", uploadPath.getAbsolutePath());
 
             if (!uploadPath.exists()) {
-                logger.info("上传目录不存在，尝试创建: {}", uploadPath.getAbsolutePath());
+                logger.info("图片上传目录不存在，尝试创建: {}", uploadPath.getAbsolutePath());
                 if (uploadPath.mkdirs()) {
                     logger.info("目录创建成功: {}", uploadPath.getAbsolutePath());
                 } else {
-                    logger.error("创建上传目录失败: {}. 请检查路径和权限。", uploadPath.getAbsolutePath());
+                    logger.error("创建图片上传目录失败: {}. 请检查路径和权限。", uploadPath.getAbsolutePath());
                     return Result.error("服务器错误: 无法创建上传目录。");
                 }
             } else {
-                logger.info("上传目录已存在: {}", uploadPath.getAbsolutePath());
+                logger.info("图片上传目录已存在: {}", uploadPath.getAbsolutePath());
             }
 
             if (!uploadPath.isDirectory() || !uploadPath.canWrite()) {
-                logger.error("上传目录无效或不可写: {}", uploadPath.getAbsolutePath());
+                logger.error("图片上传目录无效或不可写: {}", uploadPath.getAbsolutePath());
                 return Result.error("服务器配置错误: 上传目录无效或不可写。");
             }
 
@@ -146,7 +147,7 @@ public class FileUploadController {
 
             if (dest.exists() && dest.length() > 0) {
                 logger.info("图片成功保存到: {}, 大小: {} bytes", dest.getAbsolutePath(), dest.length());
-                String fileUrl = "/uploads/" + uniqueFileName;
+                String fileUrl = "/uploads/img/" + uniqueFileName;
                 logger.info("返回给前端的图片URL: {}", fileUrl);
                 return Result.success(fileUrl);
             } else {
@@ -184,7 +185,7 @@ public class FileUploadController {
         }
         
         try {
-            File uploadPath = new File(uploadDir);
+            File uploadPath = new File(avatarUploadDir);
             if (!uploadPath.exists()) {
                 uploadPath.mkdirs();
             }
@@ -198,7 +199,7 @@ public class FileUploadController {
             
             file.transferTo(dest);
             
-            String fileUrl = "/uploads/" + uniqueFileName;
+            String fileUrl = "/uploads/avatar/" + uniqueFileName;
             Map<String, String> result = new HashMap<>();
             result.put("url", fileUrl);
             
