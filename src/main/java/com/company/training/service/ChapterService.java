@@ -17,6 +17,7 @@ public interface ChapterService {
 
     Course getCourseInfo(Long courseId);
 
+    // 在ChapterService中添加方法
     Chapter getChapterById(Long id);
 
     List<Chapter> getAllChapters();

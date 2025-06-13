@@ -65,4 +65,12 @@
         WHERE id = #{id}
     </update>
     
+    <!-- 在 </mapper> 标签前添加以下内容 -->
+    <select id="selectTeacherWithAvatar" resultMap="TeacherWithUserResultMap" parameterType="java.lang.Long">
+        SELECT 
+        <include refid="Teacher_With_User_Column_List"/>
+        FROM teacher t
+        LEFT JOIN user u ON t.user_id = u.id
+        WHERE t.id = #{id} AND t.deleted = 0
+    </select>
 </mapper>

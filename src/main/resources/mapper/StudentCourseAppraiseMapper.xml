@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.StudentCourseAppraiseMapper">
+
+    <resultMap id="BaseResultMap" type="com.company.training.entity.StudentCourseAppraise">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="stu_id" property="stuId" jdbcType="BIGINT"/>
+        <result column="cou_id" property="couId" jdbcType="BIGINT"/>
+        <result column="cou_appraise" property="couAppraise" jdbcType="VARCHAR"/>
+        <result column="evaluate_score" property="evaluateScore" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, stu_id, cou_id, cou_appraise, evaluate_score,
+        create_time, deleted, update_time
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from student_course_appraise
+        where id = #{id,jdbcType=BIGINT} and deleted = 0
+    </select>
+
+    <select id="selectByCourseId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from student_course_appraise
+        where cou_id = #{couId,jdbcType=BIGINT} and deleted = 0
+        order by create_time desc
+    </select>
+
+    <select id="selectByStudentAndCourse" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from student_course_appraise
+        where stu_id = #{stuId,jdbcType=BIGINT} and cou_id = #{couId,jdbcType=BIGINT} and deleted = 0
+    </select>
+
+    <select id="selectByStudentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from student_course_appraise
+        where stu_id = #{stuId,jdbcType=BIGINT} and deleted = 0
+        order by create_time desc
+    </select>
+
+    <select id="selectAverageScoreByCourseId" resultType="java.lang.Double" parameterType="java.lang.Long">
+        select AVG(evaluate_score)
+        from student_course_appraise
+        where cou_id = #{couId,jdbcType=BIGINT} and deleted = 0 and evaluate_score is not null
+    </select>
+
+    <select id="selectTotalCountByCourseId" resultType="java.lang.Integer" parameterType="java.lang.Long">
+        select COUNT(*)
+        from student_course_appraise
+        where cou_id = #{couId,jdbcType=BIGINT} and deleted = 0
+    </select>
+
+    <insert id="insert" parameterType="com.company.training.entity.StudentCourseAppraise" useGeneratedKeys="true" keyProperty="id">
+        insert into student_course_appraise (stu_id, cou_id, cou_appraise, evaluate_score,
+                                           create_time, deleted, update_time)
+        values (#{stuId,jdbcType=BIGINT}, #{couId,jdbcType=BIGINT}, #{couAppraise,jdbcType=VARCHAR},
+                #{evaluateScore,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=INTEGER},
+                #{updateTime,jdbcType=TIMESTAMP})
+    </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com.company.training.entity.StudentCourseAppraise">
+        update student_course_appraise
+        set stu_id = #{stuId,jdbcType=BIGINT},
+            cou_id = #{couId,jdbcType=BIGINT},
+            cou_appraise = #{couAppraise,jdbcType=VARCHAR},
+            evaluate_score = #{evaluateScore,jdbcType=INTEGER},
+            update_time = #{updateTime,jdbcType=TIMESTAMP}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="logicalDeleteByPrimaryKey" parameterType="java.lang.Long">
+        update student_course_appraise
+        set deleted = 1, update_time = NOW()
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+</mapper>

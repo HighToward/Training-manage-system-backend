@@ -22,4 +22,11 @@ public class Result<T> {
         result.setMessage(message);
         return result;
     }
+    public static <T> Result<T> success() {
+        Result<T> result = new Result<>();
+        result.setCode(200);
+        result.setMessage("success");
+        result.setData(null);
+        return result;
+    }
 }

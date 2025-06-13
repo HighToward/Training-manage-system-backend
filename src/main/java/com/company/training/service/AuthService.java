@@ -5,4 +5,5 @@ import com.company.training.model.LoginResponse;
 
 public interface AuthService {
     LoginResponse login(LoginRequest loginRequest);
+    LoginResponse studentLogin(LoginRequest loginRequest);
 }

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.TopicQuestionMapper">
+    <resultMap id="BaseResultMap" type="com.company.training.entity.TopicQuestion">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="stu_id" property="stuId" jdbcType="BIGINT"/>
+        <result column="tea_id" property="teaId" jdbcType="BIGINT"/>
+        <result column="has_adopt" property="hasAdopt" jdbcType="INTEGER"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="like_num" property="likeNum" jdbcType="INTEGER"/>
+        <result column="question_type" property="questionType" jdbcType="VARCHAR"/>
+        <result column="collection_num" property="collectionNum" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="class_id" property="classId" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, stu_id, tea_id, has_adopt, content, like_num, question_type, collection_num,
+        create_time, deleted, update_time, class_id
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from topic_question
+        where id = #{id,jdbcType=BIGINT} and deleted = 0
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from topic_question
+        where deleted = 0
+        order by create_time desc
+    </select>
+
+    <select id="selectByStudentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from topic_question
+        where stu_id = #{stuId,jdbcType=BIGINT} and deleted = 0
+        order by create_time desc
+    </select>
+
+    <select id="selectByClassId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from topic_question
+        where class_id = #{classId,jdbcType=BIGINT} and deleted = 0
+        order by create_time desc
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        update topic_question
+        set deleted = 1
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.company.training.entity.TopicQuestion">
+        insert into topic_question (id, stu_id, tea_id, has_adopt, content, like_num,
+        question_type, collection_num, create_time, deleted, update_time, class_id)
+        values (#{id,jdbcType=BIGINT}, #{stuId,jdbcType=BIGINT}, #{teaId,jdbcType=BIGINT},
+        #{hasAdopt,jdbcType=INTEGER}, #{content,jdbcType=VARCHAR}, #{likeNum,jdbcType=INTEGER},
+        #{questionType,jdbcType=VARCHAR}, #{collectionNum,jdbcType=INTEGER},
+        #{createTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=INTEGER},
+        #{updateTime,jdbcType=TIMESTAMP}, #{classId,jdbcType=BIGINT})
+    </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com.company.training.entity.TopicQuestion">
+        update topic_question
+        <set>
+            <if test="stuId != null">
+                stu_id = #{stuId,jdbcType=BIGINT},
+            </if>
+            <if test="teaId != null">
+                tea_id = #{teaId,jdbcType=BIGINT},
+            </if>
+            <if test="hasAdopt != null">
+                has_adopt = #{hasAdopt,jdbcType=INTEGER},
+            </if>
+            <if test="content != null">
+                content = #{content,jdbcType=VARCHAR},
+            </if>
+            <if test="likeNum != null">
+                like_num = #{likeNum,jdbcType=INTEGER},
+            </if>
+            <if test="questionType != null">
+                question_type = #{questionType,jdbcType=VARCHAR},
+            </if>
+            <if test="collectionNum != null">
+                collection_num = #{collectionNum,jdbcType=INTEGER},
+            </if>
+            <if test="deleted != null">
+                deleted = #{deleted,jdbcType=INTEGER},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="classId != null">
+                class_id = #{classId,jdbcType=BIGINT},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="incrementLikeNum" parameterType="java.lang.Long">
+        update topic_question
+        set like_num = like_num + 1
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="decrementLikeNum" parameterType="java.lang.Long">
+        update topic_question
+        set like_num = like_num - 1
+        where id = #{id,jdbcType=BIGINT} and like_num > 0
+    </update>
+
+    <update id="incrementCollectionNum" parameterType="java.lang.Long">
+        update topic_question
+        set collection_num = collection_num + 1
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="decrementCollectionNum" parameterType="java.lang.Long">
+        update topic_question
+        set collection_num = collection_num - 1
+        where id = #{id,jdbcType=BIGINT} and collection_num > 0
+    </update>
+
+    <select id="selectDistinctQuestionTypes" resultType="java.lang.String">
+        select distinct question_type
+        from topic_question
+        where deleted = 0 and question_type is not null and question_type != ''
+        order by question_type
+    </select>
+</mapper>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.TopicQuestionCollectionMapper">
+    <resultMap id="BaseResultMap" type="com.company.training.entity.TopicQuestionCollection">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="stu_id" property="stuId" jdbcType="BIGINT"/>
+        <result column="q_id" property="qId" jdbcType="BIGINT"/>
+        <result column="collection" property="collection" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, stu_id, q_id, collection, create_time, update_time
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from topic_question_collection
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="selectByStuIdAndQId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from topic_question_collection
+        where stu_id = #{stuId,jdbcType=BIGINT} and q_id = #{qId,jdbcType=BIGINT}
+    </select>
+
+    <select id="selectByStudentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from topic_question_collection
+        where stu_id = #{stuId,jdbcType=BIGINT}
+        order by create_time desc
+    </select>
+
+    <select id="selectByQuestionId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from topic_question_collection
+        where q_id = #{qId,jdbcType=BIGINT}
+        order by create_time desc
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from topic_question_collection
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.company.training.entity.TopicQuestionCollection">
+        insert into topic_question_collection (id, stu_id, q_id, collection, create_time, update_time)
+        values (#{id,jdbcType=BIGINT}, #{stuId,jdbcType=BIGINT}, #{qId,jdbcType=BIGINT},
+        #{collection,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP})
+    </insert>
+
+    <update id="updateByPrimaryKey" parameterType="com.company.training.entity.TopicQuestionCollection">
+        update topic_question_collection
+        <set>
+            <if test="stuId != null">
+                stu_id = #{stuId,jdbcType=BIGINT},
+            </if>
+            <if test="qId != null">
+                q_id = #{qId,jdbcType=BIGINT},
+            </if>
+            <if test="collection != null">
+                collection = #{collection,jdbcType=INTEGER},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+</mapper>

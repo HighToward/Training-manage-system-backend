@@ -90,4 +90,23 @@ public class TeacherServiceImpl implements TeacherService {
             throw new RuntimeException("Token解析失败: " + e.getMessage());
         }
     }
+    
+    // 在TeacherServiceImpl中实现方法
+    @Override
+    public Teacher getTeacherById(Long id) {
+        // 使用联表查询获取教师信息和头像
+        Teacher teacher = teacherMapper.selectTeacherWithAvatar(id);
+        if (teacher != null && teacher.getPic() != null) {
+            // 确保头像路径正确
+            String picPath = teacher.getPic();
+            if (picPath.startsWith("/uploads/")) {
+                // 头像路径已经是正确格式
+                teacher.setPic(picPath);
+            } else if (!picPath.startsWith("http")) {
+                // 如果不是完整URL，添加uploads前缀
+                teacher.setPic("/uploads/avatar/" + picPath);
+            }
+        }
+        return teacher;
+    }
 }

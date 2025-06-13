@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.DashboardMapper">
+
+    <!-- 获取资讯文章总数 -->
+    <select id="getInformationCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM information WHERE deleted = 0
+    </select>
+
+    <!-- 获取课程总数 -->
+    <select id="getCourseCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM course WHERE deleted = 0
+    </select>
+
+    <!-- 获取评论总数 -->
+    <select id="getCommentCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM information_comments WHERE deleted = 0
+    </select>
+
+    <!-- 获取学生总数 -->
+    <select id="getStudentCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM student WHERE deleted = 0
+    </select>
+
+    <!-- 获取最新评论（前5条） -->
+    <select id="getLatestComments" resultType="java.util.Map">
+        SELECT 
+            ic.id,
+            ic.content,
+            ic.create_time as createTime,
+            i.info_title as infoTitle,
+            i.id as infoId,
+            CASE 
+                WHEN u.role = 1 THEN s.stu_name
+                WHEN u.role = 0 THEN t.tea_name
+                ELSE u.username
+            END as studentName,
+            u.pic as stuPic
+        FROM information_comments ic
+        LEFT JOIN information i ON ic.info_id = i.id
+        LEFT JOIN user u ON ic.user_id = u.id
+        LEFT JOIN student s ON u.id = s.user_id AND u.role = 1
+        LEFT JOIN teacher t ON u.id = t.user_id AND u.role = 0
+        WHERE ic.deleted = 0 AND i.deleted = 0
+        ORDER BY ic.create_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 获取最新课程（前5条） -->
+    <select id="getLatestCourses" resultType="java.util.Map">
+        SELECT 
+            c.id,
+            c.cou_name as couName,
+            c.cou_pic as couPic,
+            c.cou_price as couPrice,
+            c.create_time as createTime,
+            t.tea_name as teaName,
+            u.pic as teaPic
+        FROM course c
+        LEFT JOIN teacher t ON c.tea_id = t.id
+        LEFT JOIN user u ON t.user_id = u.id
+        WHERE c.deleted = 0
+        ORDER BY c.create_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 获取最新购买记录（前5条） -->
+    <select id="getLatestPurchases" resultType="java.util.Map">
+        SELECT 
+            so.id,
+            so.code as orderCode,
+            so.amount,
+            so.create_time as createTime,
+            s.stu_name as studentName,
+            sod.cou_name as courseName,
+            sod.cou_id as courseId,
+            sod.cou_price as coursePrice
+        FROM student_order so
+        LEFT JOIN student s ON so.stu_id = s.id
+        LEFT JOIN student_order_detail sod ON so.id = sod.order_id
+        WHERE so.deleted = 0 AND s.deleted = 0 AND sod.deleted = 0
+        ORDER BY so.create_time DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

@@ -11,7 +11,7 @@ import java.util.List;
 public interface CourseService {
     PageInfo<CourseVO> getCourseList(CourseQueryVO queryVO);
 
-    Course getCourseById(Long id);
+    Course getCourseById(Long id); // 改为返回CourseVO
 
     boolean saveCourse(Course course);
 

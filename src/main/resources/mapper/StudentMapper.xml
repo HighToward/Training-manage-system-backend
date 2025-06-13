@@ -69,4 +69,12 @@
         where id = #{id,jdbcType=BIGINT}
     </update>
 
+    <!-- 新增：根据用户ID查询学生信息 -->
+    <select id="findByUserId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from student
+        where user_id = #{userId,jdbcType=BIGINT} and deleted = 0
+    </select>
+
 </mapper>

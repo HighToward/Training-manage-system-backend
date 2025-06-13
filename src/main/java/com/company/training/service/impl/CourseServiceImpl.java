@@ -14,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.company.training.entity.Teacher;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,7 +62,39 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Course getCourseById(Long id) {
-        return courseMapper.selectByPrimaryKey(id);
+        Course course = courseMapper.selectByPrimaryKey(id);
+        if (course == null) {
+            return null;
+        }
+        
+        // 转换为CourseVO并设置教师名称
+        CourseVO vo = new CourseVO();
+        BeanUtils.copyProperties(course, vo);
+        
+        // 设置教师名称
+        if (course.getTeaId() != null) {
+            Teacher teacher = teacherMapper.selectByPrimaryKey(course.getTeaId());
+            if (teacher != null) {
+                vo.setTeaName(teacher.getTeaName());
+            }
+        }
+        
+        // 设置类型名称
+        if (course.getCouTypeId() != null) {
+            CourseType courseType = courseTypeMapper.selectByPrimaryKey(course.getCouTypeId());
+            if (courseType != null) {
+                vo.setTypeName(courseType.getTypeName());
+            }
+        }
+        
+        if (course.getCouParTypeId() != null) {
+            CourseType parentType = courseTypeMapper.selectByPrimaryKey(course.getCouParTypeId());
+            if (parentType != null) {
+                vo.setParentTypeName(parentType.getTypeName());
+            }
+        }
+        
+        return vo;
     }
 
     @Override

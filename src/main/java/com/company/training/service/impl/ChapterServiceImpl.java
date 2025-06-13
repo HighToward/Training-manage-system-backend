@@ -98,6 +98,7 @@ public class ChapterServiceImpl implements ChapterService {
         return true;
     }
 
+    // 在ChapterServiceImpl中实现方法
     @Override
     public Chapter getChapterById(Long id) {
         return chapterMapper.selectByPrimaryKey(id);

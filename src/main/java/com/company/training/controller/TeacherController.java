@@ -4,6 +4,8 @@ import com.company.training.entity.Teacher;
 import com.company.training.entity.vo.Result;
 import com.company.training.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,6 +44,22 @@ public class TeacherController {
             return Result.success("更新成功");
         } catch (Exception e) {
             return Result.error("更新失败: " + e.getMessage());
+        }
+    }
+    
+    // 添加根据教师ID获取教师信息的接口
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getTeacherById(@PathVariable Long id) {
+        try {
+            Teacher teacher = teacherService.getTeacherById(id);
+            if (teacher != null) {
+                return ResponseEntity.ok(teacher);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("获取教师信息失败: " + e.getMessage());
         }
     }
 }

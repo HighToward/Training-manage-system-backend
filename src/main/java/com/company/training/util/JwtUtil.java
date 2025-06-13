@@ -110,4 +110,13 @@ public class JwtUtil {
             return true; // 如果解析失败，认为即将过期
         }
     }
+    
+    /**
+     * 从Token中提取用户ID（parseUserId的别名方法）
+     * @param token JWT Token
+     * @return 用户ID
+     */
+    public Long extractUserId(String token) {
+        return parseUserId(token);
+    }
 }

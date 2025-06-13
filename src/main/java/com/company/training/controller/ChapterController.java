@@ -58,4 +58,9 @@ public class ChapterController {
         return Result.success(chapters);
     }
 
+    @GetMapping("/{id}")
+    public Result<Chapter> getChapterById(@PathVariable Long id) {
+        Chapter chapter = chapterService.getChapterById(id);
+        return chapter != null ? Result.success(chapter) : Result.error("章节不存在");
+    }
 }

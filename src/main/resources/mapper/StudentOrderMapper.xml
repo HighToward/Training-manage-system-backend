@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.StudentOrderMapper">
+
+    <resultMap id="StudentOrderResultMap" type="com.company.training.entity.StudentOrder">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="stu_id" property="stuId" jdbcType="BIGINT"/>
+        <result column="amount" property="amount" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap id="StudentOrderDetailResultMap" type="com.company.training.entity.StudentOrderDetail">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="order_id" property="orderId" jdbcType="BIGINT"/>
+        <result column="cou_id" property="couId" jdbcType="BIGINT"/>
+        <result column="cou_price" property="couPrice" jdbcType="BIGINT"/>
+        <result column="cou_pic" property="couPic" jdbcType="VARCHAR"/>
+        <result column="tea_name" property="teaName" jdbcType="VARCHAR"/>
+        <result column="cou_name" property="couName" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Order_Column_List">
+        id, code, stu_id, amount, create_time, update_time, deleted
+    </sql>
+
+    <sql id="OrderDetail_Column_List">
+        id, order_id, cou_id, cou_price, cou_pic, tea_name, cou_name, create_time, update_time, deleted
+    </sql>
+
+    <!-- 插入订单 -->
+    <insert id="insert" parameterType="com.company.training.entity.StudentOrder" useGeneratedKeys="true" keyProperty="id">
+        insert into student_order (code, stu_id, amount, create_time, update_time, deleted)
+        values (#{code,jdbcType=VARCHAR}, #{stuId,jdbcType=BIGINT}, #{amount,jdbcType=BIGINT},
+                NOW(), NOW(), 0)
+    </insert>
+
+    <!-- 插入订单详情 -->
+    <insert id="insertOrderDetail" parameterType="com.company.training.entity.StudentOrderDetail" useGeneratedKeys="true" keyProperty="id">
+        insert into student_order_detail (order_id, cou_id, cou_price, cou_pic, tea_name, cou_name, create_time, update_time, deleted)
+        values (#{orderId,jdbcType=BIGINT}, #{couId,jdbcType=BIGINT}, #{couPrice,jdbcType=BIGINT},
+                #{couPic,jdbcType=VARCHAR}, #{teaName,jdbcType=VARCHAR}, #{couName,jdbcType=VARCHAR},
+                NOW(), NOW(), 0)
+    </insert>
+
+    <!-- 根据学生ID和课程ID查询订单详情 -->
+    <select id="selectOrderDetailByStuIdAndCourseId" resultMap="StudentOrderDetailResultMap">
+        select sod.*
+        from student_order_detail sod
+        inner join student_order so on sod.order_id = so.id
+        where so.stu_id = #{stuId,jdbcType=BIGINT} 
+        and sod.cou_id = #{courseId,jdbcType=BIGINT}
+        and sod.deleted = 0 and so.deleted = 0
+        limit 1
+    </select>
+
+    <!-- 根据学生ID获取所有购买的课程 -->
+    <select id="selectPurchasedCoursesByStuId" resultMap="StudentOrderDetailResultMap">
+        select sod.*
+        from student_order_detail sod
+        inner join student_order so on sod.order_id = so.id
+        where so.stu_id = #{stuId,jdbcType=BIGINT}
+        and sod.deleted = 0 and so.deleted = 0
+        order by sod.create_time desc
+    </select>
+
+    <!-- 根据订单ID查询订单 -->
+    <select id="selectByOrderId" resultMap="StudentOrderResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Order_Column_List"/>
+        from student_order
+        where id = #{orderId,jdbcType=BIGINT} and deleted = 0
+    </select>
+
+    <!-- 根据学生ID查询订单列表 -->
+    <select id="selectOrdersByStuId" resultMap="StudentOrderResultMap">
+        select
+        <include refid="Order_Column_List"/>
+        from student_order
+        where stu_id = #{stuId,jdbcType=BIGINT} and deleted = 0
+        order by create_time desc
+    </select>
+
+</mapper>
