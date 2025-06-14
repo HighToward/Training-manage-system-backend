@@ -135,4 +135,8 @@
         where deleted = 0 and question_type is not null and question_type != ''
         order by question_type
     </select>
+    
+    <select id="selectImagesByQuestionId" resultType="String">
+        SELECT url FROM topic_question_img WHERE q_id = #{qId} AND deleted = 0
+    </select>
 </mapper>

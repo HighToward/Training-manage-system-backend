@@ -3,10 +3,13 @@ package com.company.training.service.impl;
 import com.company.training.entity.*;
 import com.company.training.mapper.*;
 import com.company.training.service.TopicQuestionService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -21,6 +24,9 @@ public class TopicQuestionServiceImpl implements TopicQuestionService {
     
     @Autowired
     private TopicQuestionCollectionMapper topicQuestionCollectionMapper;
+    
+    @Value("${file.upload-dir:uploads/img}")
+    private String uploadDir;
     
     @Override
     public List<TopicQuestion> getTopicQuestionList() {
@@ -142,5 +148,53 @@ public class TopicQuestionServiceImpl implements TopicQuestionService {
     @Override
     public List<String> getQuestionTypes() {
         return topicQuestionMapper.selectDistinctQuestionTypes();
+    }
+    
+
+    
+    @Override
+    public List<String> getQuestionImages(Long qId) {
+        return topicQuestionMapper.selectImagesByQuestionId(qId);
+    }
+    
+    @Override
+    @Transactional
+    public void adoptQuestion(Long id) {
+        TopicQuestion question = topicQuestionMapper.selectByPrimaryKey(id);
+        if (question != null) {
+            question.setHasAdopt(1);
+            question.setUpdateTime(new Date());
+            topicQuestionMapper.updateByPrimaryKey(question);
+        }
+    }
+    
+    @Override
+    @Transactional
+    public void cancelAdoptQuestion(Long id) {
+        TopicQuestion question = topicQuestionMapper.selectByPrimaryKey(id);
+        if (question != null) {
+            question.setHasAdopt(0);
+            question.setUpdateTime(new Date());
+            topicQuestionMapper.updateByPrimaryKey(question);
+        }
+    }
+    
+    @Override
+    @Transactional
+    public void batchAdoptQuestions(List<Long> ids) {
+        for (Long id : ids) {
+            adoptQuestion(id);
+        }
+    }
+    
+    @Override
+    @Transactional
+    public void rejectQuestion(Long id) {
+        TopicQuestion question = topicQuestionMapper.selectByPrimaryKey(id);
+        if (question != null) {
+            question.setHasAdopt(2);
+            question.setUpdateTime(new Date());
+            topicQuestionMapper.updateByPrimaryKey(question);
+        }
     }
 }

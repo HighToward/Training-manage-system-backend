@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.TopicQuestionCommentMapper">
+
+    <!-- ResultMap for TopicQuestionComment -->
+    <resultMap id="BaseResultMap" type="com.company.training.entity.TopicQuestionComment">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="q_id" property="qId" jdbcType="BIGINT"/>
+        <result column="stu_id" property="stuId" jdbcType="BIGINT"/>
+        <result column="tea_id" property="teaId" jdbcType="BIGINT"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="has_adopt" property="hasAdopt" jdbcType="INTEGER"/>
+        <result column="like_num" property="likeNum" jdbcType="INTEGER"/>
+        <result column="at_id" property="atId" jdbcType="BIGINT"/>
+        <result column="parent_comments_id" property="parentCommentsId" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+        <!-- 非数据库字段 -->
+        <result column="userName" property="userName" jdbcType="VARCHAR"/>
+        <result column="userAvatar" property="userAvatar" jdbcType="VARCHAR"/>
+        <result column="userType" property="userType" jdbcType="VARCHAR"/>
+        <result column="userId" property="userId" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <!-- 根据问题ID获取评论列表 -->
+    <select id="getCommentsByQuestionId" resultType="com.company.training.entity.TopicQuestionComment">
+        SELECT * FROM topic_question_comment 
+        WHERE q_id = #{qId} AND deleted = 0 
+        ORDER BY create_time DESC
+    </select>
+    
+    <!-- 根据问题ID获取带用户信息的评论列表 -->
+    <select id="getCommentsWithUserInfoByQuestionId" resultMap="BaseResultMap">
+        SELECT tqc.*, 
+            CASE 
+                WHEN tqc.stu_id IS NOT NULL THEN s.stu_name 
+                WHEN tqc.tea_id IS NOT NULL THEN t.tea_name 
+                ELSE NULL 
+            END as userName, 
+            CASE 
+                WHEN tqc.stu_id IS NOT NULL THEN su.pic 
+                WHEN tqc.tea_id IS NOT NULL THEN tu.pic 
+                ELSE NULL 
+            END as userAvatar, 
+            CASE 
+                WHEN tqc.stu_id IS NOT NULL THEN 'student' 
+                WHEN tqc.tea_id IS NOT NULL THEN 'teacher' 
+                ELSE NULL 
+            END as userType,
+            CASE 
+                WHEN tqc.stu_id IS NOT NULL THEN s.user_id 
+                WHEN tqc.tea_id IS NOT NULL THEN t.user_id 
+                ELSE NULL 
+            END as userId 
+        FROM topic_question_comment tqc
+        LEFT JOIN student s ON tqc.stu_id = s.user_id  
+        LEFT JOIN teacher t ON tqc.tea_id = t.user_id
+        LEFT JOIN user su ON s.user_id = su.id
+        LEFT JOIN user tu ON t.user_id = tu.id
+        WHERE tqc.q_id = #{qId} AND tqc.deleted = 0 
+        ORDER BY tqc.create_time DESC
+    </select>
+
+    <!-- 插入评论 -->
+    <insert id="insertComment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO topic_question_comment (
+            q_id, stu_id, tea_id, content, has_adopt, like_num, parent_comments_id, at_id,
+            create_time, update_time, deleted
+        ) VALUES (
+            #{qId}, #{stuId}, #{teaId}, #{content}, #{hasAdopt}, #{likeNum}, #{parentCommentsId}, #{atId},
+            #{createTime}, #{updateTime}, #{deleted}
+        )
+    </insert>
+
+    <!-- 删除评论（软删除） -->
+    <update id="deleteComment">
+        UPDATE topic_question_comment SET deleted = 1 WHERE id = #{commentId}
+    </update>
+
+    <!-- 点赞评论 -->
+    <update id="likeComment">
+        UPDATE topic_question_comment SET like_num = like_num + 1 WHERE id = #{commentId}
+    </update>
+
+    <!-- 取消点赞评论 -->
+    <update id="unlikeComment">
+        UPDATE topic_question_comment SET like_num = like_num - 1 
+        WHERE id = #{commentId} AND like_num > 0
+    </update>
+
+    <!-- 采纳评论 -->
+    <update id="adoptComment">
+        UPDATE topic_question_comment SET has_adopt = 1 WHERE id = #{commentId}
+    </update>
+    
+    <!-- 根据评论ID获取带用户信息的评论 -->
+    <select id="getCommentWithUserInfoById" resultMap="BaseResultMap">
+        SELECT c.*, 
+            CASE 
+                WHEN c.stu_id IS NOT NULL THEN s.stu_name 
+                WHEN c.tea_id IS NOT NULL THEN t.tea_name 
+                ELSE NULL 
+            END as userName, 
+            CASE 
+                WHEN c.stu_id IS NOT NULL THEN u1.pic 
+                WHEN c.tea_id IS NOT NULL THEN u2.pic 
+                ELSE NULL 
+            END as userAvatar, 
+            CASE 
+                WHEN c.stu_id IS NOT NULL THEN 'student' 
+                WHEN c.tea_id IS NOT NULL THEN 'teacher' 
+                ELSE NULL 
+            END as userType,
+            CASE 
+                WHEN c.stu_id IS NOT NULL THEN s.user_id 
+                WHEN c.tea_id IS NOT NULL THEN t.user_id 
+                ELSE NULL 
+            END as userId 
+        FROM topic_question_comment c 
+        LEFT JOIN student s ON c.stu_id = s.id 
+        LEFT JOIN user u1 ON s.user_id = u1.id 
+        LEFT JOIN teacher t ON c.tea_id = t.id 
+        LEFT JOIN user u2 ON t.user_id = u2.id 
+        WHERE c.id = #{commentId} AND c.deleted = 0
+    </select>
+    
+    <!-- 根据父评论ID获取回复列表 -->
+    <select id="getRepliesByParentId" resultMap="BaseResultMap">
+        SELECT tqc.*, 
+            CASE 
+                WHEN tqc.stu_id IS NOT NULL THEN s.stu_name 
+                WHEN tqc.tea_id IS NOT NULL THEN t.tea_name 
+                ELSE NULL 
+            END as userName, 
+            CASE 
+                WHEN tqc.stu_id IS NOT NULL THEN su.pic 
+                WHEN tqc.tea_id IS NOT NULL THEN tu.pic 
+                ELSE NULL 
+            END as userAvatar, 
+            CASE 
+                WHEN tqc.stu_id IS NOT NULL THEN 'student' 
+                WHEN tqc.tea_id IS NOT NULL THEN 'teacher' 
+                ELSE NULL 
+            END as userType,
+            CASE 
+                WHEN tqc.stu_id IS NOT NULL THEN s.user_id 
+                WHEN tqc.tea_id IS NOT NULL THEN t.user_id 
+                ELSE NULL 
+            END as userId 
+        FROM topic_question_comment tqc
+        LEFT JOIN student s ON tqc.stu_id = s.user_id  
+        LEFT JOIN teacher t ON tqc.tea_id = t.user_id
+        LEFT JOIN user su ON s.user_id = su.id
+        LEFT JOIN user tu ON t.user_id = tu.id
+        WHERE tqc.parent_comments_id = #{parentId} AND tqc.deleted = 0 
+        ORDER BY tqc.create_time ASC
+    </select>
+
+</mapper>

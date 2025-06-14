@@ -25,4 +25,18 @@ public interface TopicQuestionService {
     void collectTopicQuestion(Long id, Long stuId);
     
     List<String> getQuestionTypes();
+    
+    List<String> getQuestionImages(Long qId);
+    
+    // 采纳问题
+    void adoptQuestion(Long id);
+    
+    // 取消采纳问题
+    void cancelAdoptQuestion(Long id);
+    
+    // 批量采纳问题
+    void batchAdoptQuestions(List<Long> ids);
+    
+    // 不采纳问题
+    void rejectQuestion(Long id);
 }

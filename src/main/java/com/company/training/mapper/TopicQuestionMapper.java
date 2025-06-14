@@ -29,4 +29,6 @@ public interface TopicQuestionMapper {
     int decrementCollectionNum(Long id);
     
     List<String> selectDistinctQuestionTypes();
+    
+    List<String> selectImagesByQuestionId(@Param("qId") Long qId);
 }
