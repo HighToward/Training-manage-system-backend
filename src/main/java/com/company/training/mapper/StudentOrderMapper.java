@@ -23,4 +23,10 @@ public interface StudentOrderMapper {
     
     // 根据学生ID查询订单列表
     List<StudentOrder> selectOrdersByStuId(@Param("stuId") Long stuId);
+    
+    // 根据订单ID查询订单详情列表
+    List<StudentOrderDetail> selectOrderDetailsByOrderId(@Param("orderId") Long orderId);
+    
+    // 获取订单及其详情信息
+    List<java.util.Map<String, Object>> selectOrderWithDetailsByStuId(@Param("stuId") Long stuId);
 }

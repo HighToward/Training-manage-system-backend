@@ -14,7 +14,6 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/topicQuestion")
-@CrossOrigin
 public class TopicQuestionController {
 
     @Autowired

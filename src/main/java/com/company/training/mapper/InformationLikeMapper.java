@@ -14,6 +14,8 @@ public interface InformationLikeMapper {
     
     InformationLike selectByStuIdAndInfoId(@Param("stuId") Long stuId, @Param("infoId") Long infoId);
     
+    InformationLike selectByStuIdAndInfoIdIncludeDeleted(@Param("stuId") Long stuId, @Param("infoId") Long infoId);
+    
     int deleteByStuIdAndInfoId(@Param("stuId") Long stuId, @Param("infoId") Long infoId);
     
     int countByInfoId(Long infoId);

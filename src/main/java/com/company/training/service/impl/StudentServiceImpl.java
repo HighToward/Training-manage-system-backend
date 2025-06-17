@@ -12,6 +12,8 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -121,5 +123,77 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public List<StudentOrderDetail> getPurchasedCourses(Long stuId) {
         return studentOrderMapper.selectPurchasedCoursesByStuId(stuId);
+    }
+    
+    @Override
+    @Transactional
+    public boolean performCheckin(Long stuId) {
+        try {
+            // 检查今日是否已签到
+            if (!canCheckinToday(stuId)) {
+                return false;
+            }
+            
+            // 获取学生信息
+            Student student = studentMapper.selectByPrimaryKey(stuId);
+            if (student == null) {
+                return false;
+            }
+            
+            // 增加10积分
+            addPoints(stuId, 10L);
+            
+            // 更新签到记录（这里简化处理，实际项目中可能需要专门的签到记录表）
+            // 暂时使用updateTime字段来记录最后签到时间
+            student.setUpdateTime(LocalDateTime.now());
+            int result = studentMapper.updateByPrimaryKey(student);
+            
+            return result > 0;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean canCheckinToday(Long stuId) {
+        try {
+            Student student = studentMapper.selectByPrimaryKey(stuId);
+            if (student == null) {
+                return false;
+            }
+            
+            // 检查最后更新时间是否为今天（简化处理）
+            LocalDateTime lastUpdate = student.getUpdateTime();
+            if (lastUpdate == null) {
+                return true;
+            }
+            
+            LocalDate today = LocalDate.now();
+            LocalDate lastUpdateDate = lastUpdate.toLocalDate();
+            
+            // 如果最后更新不是今天，则可以签到
+            return !today.equals(lastUpdateDate);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    @Override
+    @Transactional
+    public void addPoints(Long stuId, Long points) {
+        try {
+            Student student = studentMapper.selectByPrimaryKey(stuId);
+            if (student != null) {
+                Long currentScore = student.getStuScore() != null ? student.getStuScore() : 0L;
+                student.setStuScore(currentScore + points);
+                studentMapper.updateByPrimaryKey(student);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

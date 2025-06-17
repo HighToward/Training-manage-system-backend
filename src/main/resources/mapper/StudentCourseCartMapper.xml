@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.StudentCourseCartMapper">
+
+    <resultMap id="StudentCourseCartResultMap" type="com.company.training.entity.StudentCourseCart">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="stu_id" property="stuId" jdbcType="BIGINT"/>
+        <result column="cou_id" property="couId" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, stu_id, cou_id, create_time, update_time, deleted
+    </sql>
+
+    <!-- 添加课程到购物车 -->
+    <insert id="insert" parameterType="com.company.training.entity.StudentCourseCart" useGeneratedKeys="true" keyProperty="id">
+        insert into student_course_cart (stu_id, cou_id, create_time, update_time, deleted)
+        values (#{stuId,jdbcType=BIGINT}, #{couId,jdbcType=BIGINT}, 
+                #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, 
+                #{deleted,jdbcType=INTEGER})
+    </insert>
+
+    <!-- 从购物车移除课程 -->
+    <delete id="deleteByStudentAndCourse">
+        delete from student_course_cart 
+        where stu_id = #{stuId,jdbcType=BIGINT} 
+        and cou_id = #{couId,jdbcType=BIGINT}
+    </delete>
+
+    <!-- 批量从购物车移除课程 -->
+    <delete id="deleteBatchByStudentAndCourses">
+        delete from student_course_cart 
+        where stu_id = #{stuId,jdbcType=BIGINT} 
+        and cou_id in
+        <foreach collection="couIds" item="couId" open="(" separator="," close=")">
+            #{couId}
+        </foreach>
+    </delete>
+
+    <!-- 清空学生购物车 -->
+    <delete id="deleteAllByStudent">
+        delete from student_course_cart 
+        where stu_id = #{stuId,jdbcType=BIGINT}
+    </delete>
+
+    <!-- 检查课程是否在购物车中 -->
+    <select id="selectByStudentAndCourse" resultMap="StudentCourseCartResultMap">
+        select 
+        <include refid="Base_Column_List"/>
+        from student_course_cart
+        where stu_id = #{stuId,jdbcType=BIGINT} 
+        and cou_id = #{couId,jdbcType=BIGINT}
+        and deleted = 0
+    </select>
+
+    <!-- 获取学生购物车列表（包含课程详细信息） -->
+    <select id="selectCartWithCourseInfo" resultType="java.util.Map">
+        select 
+            scc.id as cartId,
+            scc.stu_id as stuId,
+            scc.cou_id as couId,
+            scc.create_time as addTime,
+            c.cou_name as couName,
+            c.cou_pic as couPic,
+            c.cou_price as couPrice,
+            c.tea_name as teaName,
+            c.cou_introduction as couIntroduction,
+            c.type_name as typeName
+        from student_course_cart scc
+        inner join course c on scc.cou_id = c.id
+        where scc.stu_id = #{stuId,jdbcType=BIGINT}
+        and scc.deleted = 0
+        and c.deleted = 0
+        order by scc.create_time desc
+    </select>
+
+    <!-- 获取购物车中课程数量 -->
+    <select id="countByStudent" resultType="int">
+        select count(*)
+        from student_course_cart
+        where stu_id = #{stuId,jdbcType=BIGINT}
+        and deleted = 0
+    </select>
+
+</mapper>

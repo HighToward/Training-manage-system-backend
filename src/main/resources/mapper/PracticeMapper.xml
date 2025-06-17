@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.PracticeMapper">
+    <resultMap id="BaseResultMap" type="com.company.training.entity.Practice">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="tea_id" property="teaId" jdbcType="BIGINT"/>
+        <result column="cou_id" property="couId" jdbcType="BIGINT"/>
+        <result column="pra_name" property="praName" jdbcType="VARCHAR"/>
+        <result column="pra_site" property="praSite" jdbcType="VARCHAR"/>
+        <result column="pra_main" property="praMain" jdbcType="LONGVARCHAR"/>
+        <result column="start_time" property="startTime" jdbcType="TIMESTAMP"/>
+        <result column="end_time" property="endTime" jdbcType="TIMESTAMP"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, tea_id, cou_id, pra_name, pra_site, pra_main,
+        start_time, end_time, status, create_time, update_time, deleted
+    </sql>
+
+    <insert id="insert" parameterType="com.company.training.entity.Practice" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO practice (tea_id, cou_id, pra_name, pra_site, pra_main, start_time, end_time, status, create_time, update_time, deleted)
+        VALUES (#{teaId,jdbcType=BIGINT}, #{couId,jdbcType=BIGINT}, #{praName,jdbcType=VARCHAR},
+                #{praSite,jdbcType=VARCHAR}, #{praMain,jdbcType=LONGVARCHAR}, #{startTime,jdbcType=TIMESTAMP},
+                #{endTime,jdbcType=TIMESTAMP}, #{status,jdbcType=INTEGER}, NOW(), NOW(), 0)
+    </insert>
+
+    <select id="selectByCourseId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM practice
+        WHERE cou_id = #{courseId} AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByTeacherId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM practice
+        WHERE tea_id = #{teacherId} AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM practice
+        WHERE deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <update id="deleteByCourseId" parameterType="java.lang.Long">
+        UPDATE practice SET deleted = 1, update_time = NOW()
+        WHERE cou_id = #{courseId,jdbcType=BIGINT} AND deleted = 0
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.company.training.entity.Practice">
+        UPDATE practice
+        SET
+            tea_id = #{teaId,jdbcType=BIGINT},
+            cou_id = #{couId,jdbcType=BIGINT},
+            pra_name = #{praName,jdbcType=VARCHAR},
+            pra_site = #{praSite,jdbcType=VARCHAR},
+            pra_main = #{praMain,jdbcType=LONGVARCHAR},
+            start_time = #{startTime,jdbcType=TIMESTAMP},
+            end_time = #{endTime,jdbcType=TIMESTAMP},
+            status = #{status,jdbcType=INTEGER},
+            update_time = NOW()
+        WHERE
+            id = #{id,jdbcType=BIGINT} AND deleted = 0
+    </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM practice
+        WHERE id = #{id,jdbcType=BIGINT} AND deleted = 0
+    </select>
+
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        UPDATE practice
+        SET
+            deleted = 1,
+            update_time = NOW()
+        WHERE
+            id = #{id,jdbcType=BIGINT} AND deleted = 0
+    </update>
+
+</mapper>

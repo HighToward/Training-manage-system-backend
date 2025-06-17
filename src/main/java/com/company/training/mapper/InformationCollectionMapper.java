@@ -18,6 +18,8 @@ public interface InformationCollectionMapper {
     
     InformationCollection selectByStuIdAndInfoId(@Param("stuId") Long stuId, @Param("infoId") Long infoId);
     
+    InformationCollection selectByStuIdAndInfoIdIncludeDeleted(@Param("stuId") Long stuId, @Param("infoId") Long infoId);
+    
     int deleteByStuIdAndInfoId(@Param("stuId") Long stuId, @Param("infoId") Long infoId);
     
     int countByInfoId(Long infoId);

@@ -20,4 +20,9 @@ public interface StudentService {
     boolean checkCoursePurchased(Long stuId, Long courseId);
     boolean purchaseCourse(Long stuId, Long courseId, Long coursePrice, String courseName, String teacherName, String coursePic);
     List<StudentOrderDetail> getPurchasedCourses(Long stuId);
+    
+    // 签到相关方法
+    boolean performCheckin(Long stuId);
+    boolean canCheckinToday(Long stuId);
+    void addPoints(Long stuId, Long points);
 }

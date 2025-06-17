@@ -93,20 +93,29 @@ public class InformationServiceImpl implements InformationService {
     @Override
     @Transactional
     public boolean likeInformation(Long stuId, Long infoId) {
-        // 检查是否已点赞
+        // 检查是否已点赞（只查询未删除的记录）
         InformationLike existingLike = informationLikeMapper.selectByStuIdAndInfoId(stuId, infoId);
         if (existingLike != null) {
             return false; // 已经点赞过
         }
         
-        // 创建点赞记录
-        InformationLike like = new InformationLike();
-        like.setStuId(stuId);
-        like.setInfoId(infoId);
-        like.setCreateTime(new Date());
-        like.setUpdateTime(new Date());
-        like.setDeleted(0);
-        informationLikeMapper.insert(like);
+        // 检查是否存在已删除的记录
+        InformationLike deletedLike = informationLikeMapper.selectByStuIdAndInfoIdIncludeDeleted(stuId, infoId);
+        if (deletedLike != null && deletedLike.getDeleted() == 1) {
+            // 恢复已删除的记录
+            deletedLike.setDeleted(0);
+            deletedLike.setUpdateTime(new Date());
+            informationLikeMapper.updateByPrimaryKey(deletedLike);
+        } else {
+            // 创建新的点赞记录
+            InformationLike like = new InformationLike();
+            like.setStuId(stuId);
+            like.setInfoId(infoId);
+            like.setCreateTime(new Date());
+            like.setUpdateTime(new Date());
+            like.setDeleted(0);
+            informationLikeMapper.insert(like);
+        }
         
         // 更新资讯点赞数
         Long likeCount = (long) informationLikeMapper.countByInfoId(infoId);
@@ -136,20 +145,29 @@ public class InformationServiceImpl implements InformationService {
     @Override
     @Transactional
     public boolean collectInformation(Long stuId, Long infoId) {
-        // 检查是否已收藏
+        // 检查是否已收藏（只查询未删除的记录）
         InformationCollection existingCollection = informationCollectionMapper.selectByStuIdAndInfoId(stuId, infoId);
         if (existingCollection != null) {
             return false; // 已经收藏过
         }
         
-        // 创建收藏记录
-        InformationCollection collection = new InformationCollection();
-        collection.setStuId(stuId);
-        collection.setInfoId(infoId);
-        collection.setCreateTime(new Date());
-        collection.setUpdateTime(new Date());
-        collection.setDeleted(0);
-        informationCollectionMapper.insert(collection);
+        // 检查是否存在已删除的记录
+        InformationCollection deletedCollection = informationCollectionMapper.selectByStuIdAndInfoIdIncludeDeleted(stuId, infoId);
+        if (deletedCollection != null && deletedCollection.getDeleted() == 1) {
+            // 恢复已删除的记录
+            deletedCollection.setDeleted(0);
+            deletedCollection.setUpdateTime(new Date());
+            informationCollectionMapper.updateByPrimaryKey(deletedCollection);
+        } else {
+            // 创建新的收藏记录
+            InformationCollection collection = new InformationCollection();
+            collection.setStuId(stuId);
+            collection.setInfoId(infoId);
+            collection.setCreateTime(new Date());
+            collection.setUpdateTime(new Date());
+            collection.setDeleted(0);
+            informationCollectionMapper.insert(collection);
+        }
         
         // 更新资讯收藏数
         Long collectionCount = (long) informationCollectionMapper.countByInfoId(infoId);

@@ -17,7 +17,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/student")
-@CrossOrigin(origins = "*")
 public class StudentAuthController {
 
     @Autowired
@@ -71,6 +70,39 @@ public class StudentAuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("code", 500, "message", "获取学生信息失败: " + e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/checkin")
+    public ResponseEntity<?> studentCheckin(HttpServletRequest request) {
+        try {
+            String token = request.getHeader("Authorization");
+            if (token == null || !token.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("code", 401, "message", "未提供有效的认证令牌"));
+            }
+            
+            Long userId = jwtUtil.parseUserId(token.replace("Bearer ", ""));
+            Student student = studentService.getStudentByUserId(userId);
+            
+            if (student == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("code", 404, "message", "学生信息未找到"));
+            }
+            
+            // 执行签到逻辑
+            boolean success = studentService.performCheckin(student.getId());
+            
+            if (success) {
+                return ResponseEntity.ok(Map.of("code", 200, "message", "签到成功！获得10积分", "success", true));
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("code", 400, "message", "今日已签到", "success", false));
+            }
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("code", 500, "message", "签到失败: " + e.getMessage()));
         }
     }
 }

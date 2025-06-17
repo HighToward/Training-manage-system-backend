@@ -86,4 +86,30 @@
         order by create_time desc
     </select>
 
+    <!-- 根据订单ID查询订单详情列表 -->
+    <select id="selectOrderDetailsByOrderId" resultMap="StudentOrderDetailResultMap">
+        select
+        <include refid="OrderDetail_Column_List"/>
+        from student_order_detail
+        where order_id = #{orderId,jdbcType=BIGINT} and deleted = 0
+        order by create_time desc
+    </select>
+
+    <!-- 获取订单及其详情信息 -->
+    <select id="selectOrderWithDetailsByStuId" resultType="java.util.Map">
+        SELECT 
+            so.id as orderId,
+            so.code as orderCode,
+            so.stu_id as stuId,
+            so.amount as orderAmount,
+            so.create_time as orderCreateTime,
+            COUNT(sod.id) as courseCount,
+            GROUP_CONCAT(sod.cou_name SEPARATOR ', ') as courseNames
+        FROM student_order so
+        LEFT JOIN student_order_detail sod ON so.id = sod.order_id AND sod.deleted = 0
+        WHERE so.stu_id = #{stuId,jdbcType=BIGINT} AND so.deleted = 0
+        GROUP BY so.id, so.code, so.stu_id, so.amount, so.create_time
+        ORDER BY so.create_time DESC
+    </select>
+
 </mapper>

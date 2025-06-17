@@ -28,6 +28,13 @@
         where stu_id = #{stuId,jdbcType=BIGINT} and info_id = #{infoId,jdbcType=BIGINT} and deleted = 0
     </select>
 
+    <select id="selectByStuIdAndInfoIdIncludeDeleted" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from information_like
+        where stu_id = #{stuId,jdbcType=BIGINT} and info_id = #{infoId,jdbcType=BIGINT}
+    </select>
+
     <select id="countByInfoId" resultType="java.lang.Integer" parameterType="java.lang.Long">
         select count(*)
         from information_like

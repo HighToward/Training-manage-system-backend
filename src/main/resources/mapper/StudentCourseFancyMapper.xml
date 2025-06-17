@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.StudentCourseFancyMapper">
+
+    <resultMap id="BaseResultMap" type="com.company.training.entity.StudentCourseFancy">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="stu_id" property="stuId" jdbcType="BIGINT"/>
+        <result column="cou_id" property="couId" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, stu_id, cou_id, create_time, update_time, deleted
+    </sql>
+
+    <!-- 插入点赞记录 -->
+    <insert id="insert" parameterType="com.company.training.entity.StudentCourseFancy" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO student_course_fancy (stu_id, cou_id, create_time, update_time, deleted)
+        VALUES (#{stuId}, #{couId}, NOW(), NOW(), 0)
+    </insert>
+
+    <!-- 根据学生ID和课程ID查询点赞记录 -->
+    <select id="selectByStuIdAndCouId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM student_course_fancy
+        WHERE stu_id = #{stuId} AND cou_id = #{couId} AND deleted = 0
+    </select>
+
+    <!-- 根据学生ID查询点赞的课程列表 -->
+    <select id="selectFanciesByStuId" resultType="java.util.Map">
+        SELECT 
+            scf.id as fancyId,
+            scf.stu_id as stuId,
+            scf.cou_id as couId,
+            scf.create_time as fancyTime,
+            c.cou_name as courseName,
+            c.cou_img as courseImg,
+            c.cou_price as coursePrice,
+            c.cou_description as courseDescription
+        FROM student_course_fancy scf
+        LEFT JOIN course c ON scf.cou_id = c.id
+        WHERE scf.stu_id = #{stuId} AND scf.deleted = 0 AND c.deleted = 0
+        ORDER BY scf.create_time DESC
+    </select>
+
+    <!-- 逻辑删除点赞记录 -->
+    <update id="logicalDeleteByStuIdAndCouId">
+        UPDATE student_course_fancy
+        SET deleted = 1, update_time = NOW()
+        WHERE stu_id = #{stuId} AND cou_id = #{couId} AND deleted = 0
+    </update>
+
+    <!-- 检查是否已点赞 -->
+    <select id="checkFancyExists" resultType="int">
+        SELECT COUNT(1)
+        FROM student_course_fancy
+        WHERE stu_id = #{stuId} AND cou_id = #{couId} AND deleted = 0
+    </select>
+
+    <!-- 获取课程的点赞数量 -->
+    <select id="getFancyCountByCouId" resultType="int">
+        SELECT COUNT(1)
+        FROM student_course_fancy
+        WHERE cou_id = #{couId} AND deleted = 0
+    </select>
+
+    <!-- 根据学生ID和课程ID查询点赞记录（包括已删除的） -->
+    <select id="selectByStuIdAndCouIdIncludeDeleted" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM student_course_fancy
+        WHERE stu_id = #{stuId} AND cou_id = #{couId}
+    </select>
+
+    <!-- 根据主键更新点赞记录 -->
+    <update id="updateByPrimaryKey">
+        UPDATE student_course_fancy
+        SET stu_id = #{stuId},
+            cou_id = #{couId},
+            create_time = #{createTime},
+            update_time = #{updateTime},
+            deleted = #{deleted}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.training.mapper.StudentPracticeMapper">
+    <resultMap id="BaseResultMap" type="com.company.training.entity.StudentPractice">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="stu_id" property="stuId" jdbcType="BIGINT"/>
+        <result column="pra_id" property="praId" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, stu_id, pra_id, create_time, update_time, deleted
+    </sql>
+
+    <insert id="insert" parameterType="com.company.training.entity.StudentPractice" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO student_practice (stu_id, pra_id, create_time, update_time, deleted)
+        VALUES (#{stuId,jdbcType=BIGINT}, #{praId,jdbcType=BIGINT}, NOW(), NOW(), 0)
+    </insert>
+
+    <select id="selectByPracticeId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM student_practice
+        WHERE pra_id = #{practiceId} AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByStudentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM student_practice
+        WHERE stu_id = #{studentId} AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByStudentAndPractice" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM student_practice
+        WHERE stu_id = #{studentId,jdbcType=BIGINT} AND pra_id = #{practiceId,jdbcType=BIGINT} AND deleted = 0
+    </select>
+
+    <update id="deleteByPracticeId" parameterType="java.lang.Long">
+        UPDATE student_practice SET deleted = 1, update_time = NOW()
+        WHERE pra_id = #{practiceId,jdbcType=BIGINT} AND deleted = 0
+    </update>
+
+    <update id="deleteByStudentAndPractice">
+        UPDATE student_practice SET deleted = 1, update_time = NOW()
+        WHERE stu_id = #{studentId,jdbcType=BIGINT} AND pra_id = #{practiceId,jdbcType=BIGINT} AND deleted = 0
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.company.training.entity.StudentPractice">
+        UPDATE student_practice
+        SET
+            stu_id = #{stuId,jdbcType=BIGINT},
+            pra_id = #{praId,jdbcType=BIGINT},
+            update_time = NOW()
+        WHERE
+            id = #{id,jdbcType=BIGINT} AND deleted = 0
+    </update>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM student_practice
+        WHERE id = #{id,jdbcType=BIGINT} AND deleted = 0
+    </select>
+
+    <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        UPDATE student_practice
+        SET
+            deleted = 1,
+            update_time = NOW()
+        WHERE
+            id = #{id,jdbcType=BIGINT} AND deleted = 0
+    </update>
+
+</mapper>

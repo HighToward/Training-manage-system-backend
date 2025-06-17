@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/information")
-@CrossOrigin
 public class InformationController {
     
     @Autowired
@@ -160,6 +159,39 @@ public class InformationController {
             return Result.success(collections);
         } catch (Exception e) {
             return Result.error("获取收藏列表失败: " + e.getMessage());
+        }
+    }
+    
+    // 检查用户是否点赞了资讯
+    @GetMapping("/{infoId}/like/status/{stuId}")
+    public Result<Boolean> checkLikeStatus(@PathVariable Long infoId, @PathVariable Long stuId) {
+        try {
+            boolean isLiked = informationService.isLiked(stuId, infoId);
+            return Result.success(isLiked);
+        } catch (Exception e) {
+            return Result.error("检查点赞状态失败: " + e.getMessage());
+        }
+    }
+    
+    // 检查用户是否收藏了资讯
+    @GetMapping("/{infoId}/collect/status/{stuId}")
+    public Result<Boolean> checkCollectStatus(@PathVariable Long infoId, @PathVariable Long stuId) {
+        try {
+            boolean isCollected = informationService.isCollected(stuId, infoId);
+            return Result.success(isCollected);
+        } catch (Exception e) {
+            return Result.error("检查收藏状态失败: " + e.getMessage());
+        }
+    }
+    
+    // 检查用户是否点赞了评论
+    @GetMapping("/comments/{commentId}/like/status/{stuId}")
+    public Result<Boolean> checkCommentLikeStatus(@PathVariable Long commentId, @PathVariable Long stuId) {
+        try {
+            boolean isLiked = informationService.isCommentLiked(stuId, commentId);
+            return Result.success(isLiked);
+        } catch (Exception e) {
+            return Result.error("检查评论点赞状态失败: " + e.getMessage());
         }
     }
     
