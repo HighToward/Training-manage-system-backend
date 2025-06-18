@@ -4,21 +4,28 @@ import com.company.training.entity.Student;
 import com.company.training.entity.StudentClass;
 import com.company.training.entity.CourseClass;
 import com.company.training.entity.TrainingClass;
+import com.company.training.entity.Course;
+import com.company.training.entity.StudentOrder;
+import com.company.training.entity.StudentOrderDetail;
 import com.company.training.entity.vo.ClassQueryVO;
 import com.company.training.mapper.TrainingClassMapper;
 import com.company.training.mapper.StudentClassMapper;
 import com.company.training.mapper.CourseClassMapper;
-import com.company.training.mapper.StudentMapper; // Assuming you have this
+import com.company.training.mapper.StudentMapper;
+import com.company.training.mapper.CourseMapper;
+import com.company.training.mapper.StudentOrderMapper;
 import com.company.training.service.TrainingClassService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.company.training.entity.vo.CourseVO; // <--- 引入
+import com.company.training.entity.vo.CourseVO;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class TrainingClassServiceImpl implements TrainingClassService {
@@ -33,7 +40,13 @@ public class TrainingClassServiceImpl implements TrainingClassService {
     private CourseClassMapper courseClassMapper;
 
     @Autowired
-    private StudentMapper studentMapper; // For fetching all students
+    private StudentMapper studentMapper;
+
+    @Autowired
+    private CourseMapper courseMapper;
+
+    @Autowired
+    private StudentOrderMapper studentOrderMapper;
 
     // == Class Info Management ==
     @Override
@@ -102,16 +115,72 @@ public class TrainingClassServiceImpl implements TrainingClassService {
     @Override
     @Transactional
     public boolean addStudentToClass(Long classId, Long studentId) {
-        // Check if already exists to prevent duplicates if DB constraint is not there
-        StudentClass sc = new StudentClass();
-        sc.setClassId(classId);
-        sc.setStuId(studentId);
-        int inserted = studentClassMapper.insert(sc);
-        if (inserted > 0) {
+        try {
+            // 1. 添加学生到班级
+            StudentClass sc = new StudentClass();
+            sc.setClassId(classId);
+            sc.setStuId(studentId);
+            int inserted = studentClassMapper.insert(sc);
+            if (inserted <= 0) {
+                return false;
+            }
+            
+            // 2. 更新班级学生数量
             trainingClassMapper.updateStudentCount(classId, 1);
+            
+            // 3. 获取班级中的所有课程
+            List<CourseVO> courses = courseClassMapper.getCoursesByClassId(classId);
+            
+            // 4. 为该学生创建所有班级课程的购买记录
+            for (CourseVO courseVO : courses) {
+                Long courseId = courseVO.getId();
+                
+                // 检查学生是否已经购买了该课程
+                StudentOrderDetail existingOrder = studentOrderMapper.selectOrderDetailByStuIdAndCourseId(studentId, courseId);
+                if (existingOrder != null) {
+                    continue; // 已经购买过，跳过
+                }
+                
+                // 获取完整的课程信息
+                Course course = courseMapper.selectByPrimaryKey(courseId);
+                if (course == null) {
+                    continue;
+                }
+                
+                // 创建订单
+                StudentOrder order = new StudentOrder();
+                order.setCode("CLASS_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8));
+                order.setStuId(studentId);
+                order.setAmount(course.getCouPrice() != null ? course.getCouPrice().longValue() : 0L);
+                order.setCreateTime(LocalDateTime.now());
+                order.setUpdateTime(LocalDateTime.now());
+                order.setDeleted(0);
+                
+                int orderResult = studentOrderMapper.insert(order);
+                if (orderResult <= 0) {
+                    continue; // 订单创建失败，跳过该课程
+                }
+                
+                // 创建订单详情
+                StudentOrderDetail orderDetail = new StudentOrderDetail();
+                orderDetail.setOrderId(order.getId());
+                orderDetail.setCouId(courseId);
+                orderDetail.setCouPrice(course.getCouPrice() != null ? course.getCouPrice().longValue() : 0L);
+                orderDetail.setCouPic(course.getCouPic());
+                orderDetail.setTeaName("教师"); // 可以根据需要获取教师姓名
+                orderDetail.setCouName(course.getCouName());
+                orderDetail.setCreateTime(LocalDateTime.now());
+                orderDetail.setUpdateTime(LocalDateTime.now());
+                orderDetail.setDeleted(0);
+                
+                studentOrderMapper.insertOrderDetail(orderDetail);
+            }
+            
             return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("添加学生到班级失败", e);
         }
-        return false;
     }
 
     @Override
@@ -155,10 +224,67 @@ public class TrainingClassServiceImpl implements TrainingClassService {
     @Override
     @Transactional
     public boolean addCourseToClass(Long classId, Long courseId) {
-        CourseClass cc = new CourseClass();
-        cc.setClassId(classId);
-        cc.setCouId(courseId);
-        return courseClassMapper.insert(cc) > 0;
+        try {
+            // 1. 添加课程到班级
+            CourseClass cc = new CourseClass();
+            cc.setClassId(classId);
+            cc.setCouId(courseId);
+            int result = courseClassMapper.insert(cc);
+            if (result <= 0) {
+                return false;
+            }
+            
+            // 2. 获取课程信息
+            Course course = courseMapper.selectByPrimaryKey(courseId);
+            if (course == null) {
+                return false;
+            }
+            
+            // 3. 获取班级中的所有学生
+            List<Student> students = studentClassMapper.findStudentsByClassId(classId);
+            
+            // 4. 为每个学生创建购买记录
+            for (Student student : students) {
+                // 检查学生是否已经购买了该课程
+                StudentOrderDetail existingOrder = studentOrderMapper.selectOrderDetailByStuIdAndCourseId(student.getId(), courseId);
+                if (existingOrder != null) {
+                    continue; // 已经购买过，跳过
+                }
+                
+                // 创建订单
+                StudentOrder order = new StudentOrder();
+                order.setCode("CLASS_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8));
+                order.setStuId(student.getId());
+                order.setAmount(course.getCouPrice() != null ? course.getCouPrice().longValue() : 0L);
+                order.setCreateTime(LocalDateTime.now());
+                order.setUpdateTime(LocalDateTime.now());
+                order.setDeleted(0);
+                
+                int orderResult = studentOrderMapper.insert(order);
+                if (orderResult <= 0) {
+                    continue; // 订单创建失败，跳过该学生
+                }
+                
+                // 创建订单详情
+                StudentOrderDetail orderDetail = new StudentOrderDetail();
+                orderDetail.setOrderId(order.getId());
+                orderDetail.setCouId(courseId);
+                orderDetail.setCouPrice(course.getCouPrice() != null ? course.getCouPrice().longValue() : 0L);
+                orderDetail.setCouPic(course.getCouPic());
+                orderDetail.setTeaName("教师"); // 可以根据需要获取教师姓名
+                orderDetail.setCouName(course.getCouName());
+                orderDetail.setCreateTime(LocalDateTime.now());
+                orderDetail.setUpdateTime(LocalDateTime.now());
+                orderDetail.setDeleted(0);
+                
+                studentOrderMapper.insertOrderDetail(orderDetail);
+            }
+            
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("添加课程到班级失败", e);
+        }
     }
 
     @Override
