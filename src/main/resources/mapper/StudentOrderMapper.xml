@@ -64,8 +64,9 @@
         select sod.*
         from student_order_detail sod
         inner join student_order so on sod.order_id = so.id
+        inner join course c on sod.cou_id = c.id
         where so.stu_id = #{stuId,jdbcType=BIGINT}
-        and sod.deleted = 0 and so.deleted = 0
+        and sod.deleted = 0 and so.deleted = 0 and c.deleted = 0
         order by sod.create_time desc
     </select>
 

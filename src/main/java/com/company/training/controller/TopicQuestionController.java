@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 @RestController
-@RequestMapping("/api/topicQuestion")
+@RequestMapping("/api/topic-question")
 public class TopicQuestionController {
 
     @Autowired
@@ -24,9 +24,11 @@ public class TopicQuestionController {
 
     // 获取所有问题
     @GetMapping("/list")
-    public Result<List<TopicQuestion>> getTopicQuestionList() {
+    public Result<List<TopicQuestion>> getTopicQuestionList(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize) {
         try {
-            List<TopicQuestion> list = topicQuestionService.getTopicQuestionList();
+            List<TopicQuestion> list = topicQuestionService.getTopicQuestionList(pageNum, pageSize);
             return Result.success(list);
         } catch (Exception e) {
             return Result.error("获取问题列表失败: " + e.getMessage());

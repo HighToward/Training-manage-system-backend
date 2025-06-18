@@ -16,6 +16,8 @@ public interface TopicQuestionMapper {
     
     List<TopicQuestion> selectAll();
     
+    List<TopicQuestion> selectWithPagination(@Param("offset") int offset, @Param("pageSize") int pageSize);
+    
     List<TopicQuestion> selectByStudentId(Long stuId);
     
     List<TopicQuestion> selectByClassId(Long classId);

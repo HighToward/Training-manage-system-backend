@@ -34,6 +34,13 @@ public class TopicQuestionServiceImpl implements TopicQuestionService {
     }
     
     @Override
+    public List<TopicQuestion> getTopicQuestionList(Integer pageNum, Integer pageSize) {
+        // 计算偏移量
+        int offset = (pageNum - 1) * pageSize;
+        return topicQuestionMapper.selectWithPagination(offset, pageSize);
+    }
+    
+    @Override
     public TopicQuestion getTopicQuestionById(Long id) {
         return topicQuestionMapper.selectByPrimaryKey(id);
     }

@@ -35,6 +35,15 @@
         where deleted = 0
         order by create_time desc
     </select>
+    
+    <select id="selectWithPagination" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from topic_question
+        where deleted = 0
+        order by create_time desc
+        limit #{pageSize} offset #{offset}
+    </select>
 
     <select id="selectByStudentId" resultMap="BaseResultMap" parameterType="java.lang.Long">
         select

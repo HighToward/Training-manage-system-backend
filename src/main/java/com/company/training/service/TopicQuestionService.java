@@ -8,6 +8,8 @@ public interface TopicQuestionService {
     
     List<TopicQuestion> getTopicQuestionList();
     
+    List<TopicQuestion> getTopicQuestionList(Integer pageNum, Integer pageSize);
+    
     TopicQuestion getTopicQuestionById(Long id);
     
     List<TopicQuestion> getTopicQuestionByStudentId(Long stuId);
