@@ -57,7 +57,7 @@ public class StudentAuthController {
                         .body(Map.of("code", 401, "message", "未提供有效的认证令牌"));
             }
             
-            Long userId = jwtUtil.parseUserId(token.replace("Bearer ", ""));
+            Long userId = jwtUtil.parseUserId(token);
             Student student = studentService.getStudentByUserId(userId);
             
             if (student == null) {
@@ -82,7 +82,7 @@ public class StudentAuthController {
                         .body(Map.of("code", 401, "message", "未提供有效的认证令牌"));
             }
             
-            Long userId = jwtUtil.parseUserId(token.replace("Bearer ", ""));
+            Long userId = jwtUtil.parseUserId(token);
             Student student = studentService.getStudentByUserId(userId);
             
             if (student == null) {

@@ -2,6 +2,8 @@ package com.company.training.controller;
 
 import com.company.training.entity.Student;
 import com.company.training.entity.StudentOrderDetail;
+import com.company.training.entity.TrainingClass;
+import com.company.training.entity.Course;
 import com.company.training.entity.vo.Result;
 import com.company.training.entity.vo.StudentQueryVO;
 import com.company.training.service.StudentService;
@@ -72,7 +74,7 @@ public class StudentController {
                 return ResponseEntity.status(401).body(Map.of("code", 401, "message", "未提供有效的认证令牌"));
             }
             
-            Long userId = jwtUtil.parseUserId(token.replace("Bearer ", ""));
+            Long userId = jwtUtil.parseUserId(token);
             Student student = studentService.getStudentByUserId(userId);
             if (student == null) {
                 return ResponseEntity.status(404).body(Map.of("code", 404, "message", "学生信息未找到"));
@@ -151,6 +153,56 @@ public class StudentController {
             
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("message", "服务器内部错误: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * 获取学生的班级列表
+     */
+    @GetMapping("/student-class/student/{stuId}")
+    public ResponseEntity<?> getStudentClasses(@PathVariable Long stuId, HttpServletRequest request) {
+        try {
+            // 验证JWT token
+            String token = request.getHeader("Authorization");
+            if (token == null || !token.startsWith("Bearer ")) {
+                return ResponseEntity.status(401)
+                        .body(Map.of("success", false, "message", "未提供有效的认证令牌"));
+            }
+            
+            Long userId = jwtUtil.parseUserId(token);
+            
+            List<TrainingClass> classes = studentService.getClassesByStudentId(stuId);
+            return ResponseEntity.ok(classes);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(Map.of("success", false, "message", "获取学生班级列表失败"));
+        }
+    }
+    
+    /**
+     * 获取学生班级的课程列表
+     */
+    @GetMapping("/student-class/courses/{stuId}")
+    public ResponseEntity<?> getStudentClassCourses(@PathVariable Long stuId, HttpServletRequest request) {
+        try {
+            // 验证JWT token
+            String token = request.getHeader("Authorization");
+            if (token == null || !token.startsWith("Bearer ")) {
+                return ResponseEntity.status(401)
+                        .body(Map.of("success", false, "message", "未提供有效的认证令牌"));
+            }
+            
+            Long userId = jwtUtil.parseUserId(token);
+            
+            List<Course> courses = studentService.getClassCoursesByStudentId(stuId);
+            return ResponseEntity.ok(courses);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(Map.of("success", false, "message", "获取学生班级课程列表失败"));
         }
     }
 }

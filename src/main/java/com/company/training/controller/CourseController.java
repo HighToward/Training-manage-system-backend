@@ -119,4 +119,54 @@ public class CourseController {
             return Result.error("获取课程详情失败：" + e.getMessage());
         }
     }
+    
+    /**
+     * 搜索课程
+     */
+    @GetMapping("/search")
+    public Result<PageInfo<CourseVO>> searchCourses(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "default") String sortBy,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        try {
+            CourseQueryVO queryVO = new CourseQueryVO();
+            queryVO.setKeyword(keyword);
+            queryVO.setCategory(category);
+            queryVO.setSortBy(sortBy);
+            queryVO.setPage(page);
+            queryVO.setPageSize(pageSize);
+            
+            PageInfo<CourseVO> pageInfo = courseService.getCourseList(queryVO);
+            return Result.success(pageInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("搜索课程失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 获取热门搜索关键词
+     */
+    @GetMapping("/hot-searches")
+    public Result<List<String>> getHotSearches() {
+        try {
+            // 返回模拟的热门搜索数据
+            List<String> hotSearches = java.util.Arrays.asList(
+                "Python编程",
+                "机器学习",
+                "SpringBoot",
+                "数据结构",
+                "算法设计",
+                "Web开发",
+                "人工智能",
+                "数据库设计"
+            );
+            return Result.success(hotSearches);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("获取热门搜索失败：" + e.getMessage());
+        }
+    }
 }

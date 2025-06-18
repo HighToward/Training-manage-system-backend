@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/student/fancy")
-@CrossOrigin
 public class StudentCourseFancyController {
     
     @Autowired

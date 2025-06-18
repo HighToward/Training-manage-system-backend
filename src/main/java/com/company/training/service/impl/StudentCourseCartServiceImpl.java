@@ -57,6 +57,56 @@ public class StudentCourseCartServiceImpl implements StudentCourseCartService {
     }
     
     @Override
+    public Map<String, Object> addToCartWithDetails(Long stuId, Long couId) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            // 检查是否已在购物车中
+            if (isInCart(stuId, couId)) {
+                result.put("success", false);
+                result.put("message", "课程已在购物车中");
+                return result;
+            }
+            
+            // 检查是否已购买
+            if (orderMapper.selectOrderDetailByStuIdAndCourseId(stuId, couId) != null) {
+                result.put("success", false);
+                result.put("message", "课程已购买");
+                return result;
+            }
+            
+            // 获取课程信息
+            Map<String, Object> courseInfo = courseMapper.selectCourseById(couId);
+            if (courseInfo == null) {
+                result.put("success", false);
+                result.put("message", "课程不存在");
+                return result;
+            }
+            
+            StudentCourseCart cart = new StudentCourseCart(stuId, couId);
+            cart.setCreateTime(LocalDateTime.now());
+            cart.setUpdateTime(LocalDateTime.now());
+            cart.setDeleted(0);
+            
+            if (cartMapper.insert(cart) > 0) {
+                result.put("success", true);
+                result.put("message", "添加到购物车成功");
+                result.put("courseInfo", courseInfo);
+            } else {
+                result.put("success", false);
+                result.put("message", "添加到购物车失败");
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("success", false);
+            result.put("message", "添加到购物车失败：" + e.getMessage());
+        }
+        
+        return result;
+    }
+    
+    @Override
     public boolean removeFromCart(Long stuId, Long couId) {
         try {
             return cartMapper.deleteByStudentAndCourse(stuId, couId) > 0;
@@ -125,6 +175,10 @@ public class StudentCourseCartServiceImpl implements StudentCourseCartService {
         Map<String, Object> result = new HashMap<>();
         
         try {
+            System.out.println("=== 购物车结算服务开始 ===");
+            System.out.println("学生ID: " + stuId);
+            System.out.println("要购买的课程ID列表: " + couIds);
+            
             if (couIds == null || couIds.isEmpty()) {
                 result.put("success", false);
                 result.put("message", "请选择要购买的课程");
@@ -133,17 +187,41 @@ public class StudentCourseCartServiceImpl implements StudentCourseCartService {
             
             // 获取购物车中的课程信息
             List<Map<String, Object>> cartItems = getCartList(stuId);
+            System.out.println("购物车中的课程数量: " + cartItems.size());
+            System.out.println("购物车详细信息: " + cartItems);
+            
             List<Map<String, Object>> selectedItems = new ArrayList<>();
             long totalAmount = 0;
             
             for (Map<String, Object> item : cartItems) {
-                Long couId = (Long) item.get("couId");
-                if (couIds.contains(couId)) {
+                Object couIdObj = item.get("couId");
+                Long couId = null;
+                if (couIdObj instanceof Number) {
+                    couId = ((Number) couIdObj).longValue();
+                } else if (couIdObj != null) {
+                    couId = Long.valueOf(couIdObj.toString());
+                }
+                
+                System.out.println("检查购物车项目 - 课程ID: " + couId + ", 是否在选择列表中: " + couIds.contains(couId));
+                
+                if (couId != null && couIds.contains(couId)) {
                     selectedItems.add(item);
-                    Long price = (Long) item.get("couPrice");
-                    totalAmount += (price != null ? price : 0);
+                    Object priceObj = item.get("couPrice");
+                    Long price = 0L;
+                    if (priceObj instanceof Number) {
+                        price = ((Number) priceObj).longValue();
+                    } else if (priceObj != null) {
+                        price = Long.valueOf(priceObj.toString());
+                    }
+                    // 价格转换为积分：1元 = 10积分
+                    Long pointsRequired = price * 10;
+                    totalAmount += pointsRequired;
+                    System.out.println("添加到选中项目: " + item.get("couName") + ", 价格: " + price + "元, 需要积分: " + pointsRequired);
                 }
             }
+            
+            System.out.println("选中的课程数量: " + selectedItems.size());
+            System.out.println("总需要积分: " + totalAmount);
             
             if (selectedItems.isEmpty()) {
                 result.put("success", false);
@@ -162,7 +240,7 @@ public class StudentCourseCartServiceImpl implements StudentCourseCartService {
             Long currentPoints = student.getStuScore();
             if (currentPoints == null || currentPoints < totalAmount) {
                 result.put("success", false);
-                result.put("message", "积分不足，无法购买");
+                result.put("message", "积分不足，无法购买。需要积分: " + totalAmount + ", 当前积分: " + (currentPoints != null ? currentPoints : 0));
                 return result;
             }
             
@@ -217,7 +295,7 @@ public class StudentCourseCartServiceImpl implements StudentCourseCartService {
             result.put("message", "购买成功");
             result.put("orderId", order.getId());
             result.put("orderCode", order.getCode());
-            result.put("totalAmount", totalAmount);
+            result.put("totalPoints", totalAmount);
             result.put("remainingPoints", newPoints);
             
         } catch (Exception e) {

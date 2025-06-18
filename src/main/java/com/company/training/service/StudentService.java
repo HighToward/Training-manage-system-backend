@@ -2,6 +2,8 @@ package com.company.training.service;
 
 import com.company.training.entity.Student;
 import com.company.training.entity.StudentOrderDetail;
+import com.company.training.entity.TrainingClass;
+import com.company.training.entity.Course;
 import com.company.training.entity.vo.StudentQueryVO;
 import com.github.pagehelper.PageInfo;
 import java.util.List;
@@ -25,4 +27,8 @@ public interface StudentService {
     boolean performCheckin(Long stuId);
     boolean canCheckinToday(Long stuId);
     void addPoints(Long stuId, Long points);
+    
+    // 班级相关方法
+    List<TrainingClass> getClassesByStudentId(Long studentId);
+    List<Course> getClassCoursesByStudentId(Long studentId);
 }

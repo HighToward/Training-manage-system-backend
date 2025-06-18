@@ -24,13 +24,13 @@ public class FileUploadController {
     private static final Logger logger = LoggerFactory.getLogger(FileUploadController.class);
 
     // 从配置文件读取不同类型文件的上传目录
-    @Value("${file.upload.video-dir:uploads/video}")
+    @Value("${file.upload.video-dir:/uploads/video}")
     private String videoUploadDir;
     
-    @Value("${file.upload.image-dir:uploads/img}")
+    @Value("${file.upload.image-dir:/uploads/img}")
     private String imageUploadDir;
     
-    @Value("${file.upload.avatar-dir:uploads/avatar}")
+    @Value("${file.upload.avatar-dir:/uploads/avatar}")
     private String avatarUploadDir;
 
     @PostMapping("/video")

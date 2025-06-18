@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/orders")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/student/order")
 public class StudentOrderController {
     
     @Autowired
@@ -21,8 +20,8 @@ public class StudentOrderController {
     /**
      * 获取学生订单列表
      */
-    @GetMapping("/list")
-    public Map<String, Object> getOrderList(@RequestParam Long stuId) {
+    @GetMapping("/list/{stuId}")
+    public Map<String, Object> getOrderList(@PathVariable Long stuId) {
         Map<String, Object> result = new HashMap<>();
         
         try {
@@ -44,8 +43,8 @@ public class StudentOrderController {
     /**
      * 获取订单详情（包含订单信息和课程详情）
      */
-    @GetMapping("/detail")
-    public Map<String, Object> getOrderDetail(@RequestParam Long orderId) {
+    @GetMapping("/detail/{orderId}")
+    public Map<String, Object> getOrderDetail(@PathVariable Long orderId) {
         Map<String, Object> result = new HashMap<>();
         
         try {
@@ -77,8 +76,8 @@ public class StudentOrderController {
     /**
      * 获取订单列表（包含订单概要信息）
      */
-    @GetMapping("/list-with-summary")
-    public Map<String, Object> getOrderListWithSummary(@RequestParam Long stuId) {
+    @GetMapping("/list-with-summary/{stuId}")
+    public Map<String, Object> getOrderListWithSummary(@PathVariable Long stuId) {
         Map<String, Object> result = new HashMap<>();
         
         try {
@@ -100,8 +99,8 @@ public class StudentOrderController {
     /**
      * 获取学生已购买的课程列表
      */
-    @GetMapping("/purchased-courses")
-    public Map<String, Object> getPurchasedCourses(@RequestParam Long stuId) {
+    @GetMapping("/purchased-courses/{stuId}")
+    public Map<String, Object> getPurchasedCourses(@PathVariable Long stuId) {
         Map<String, Object> result = new HashMap<>();
         
         try {

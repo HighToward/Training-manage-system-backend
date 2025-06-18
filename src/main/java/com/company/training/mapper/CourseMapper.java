@@ -21,5 +21,12 @@ public interface CourseMapper {
 
     int updateChapterNum(@Param("courseId") Long courseId,
                          @Param("num") int num);
+    
+    /**
+     * 根据课程ID查询课程详细信息
+     * @param courseId 课程ID
+     * @return 课程信息Map
+     */
+    java.util.Map<String, Object> selectCourseById(@Param("courseId") Long courseId);
 
 }

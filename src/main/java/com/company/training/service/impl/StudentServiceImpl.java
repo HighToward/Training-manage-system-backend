@@ -3,9 +3,12 @@ package com.company.training.service.impl;
 import com.company.training.entity.Student;
 import com.company.training.entity.StudentOrder;
 import com.company.training.entity.StudentOrderDetail;
+import com.company.training.entity.TrainingClass;
+import com.company.training.entity.Course;
 import com.company.training.entity.vo.StudentQueryVO;
 import com.company.training.mapper.StudentMapper;
 import com.company.training.mapper.StudentOrderMapper;
+import com.company.training.mapper.StudentClassMapper;
 import com.company.training.service.StudentService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -25,6 +28,9 @@ public class StudentServiceImpl implements StudentService {
     
     @Autowired
     private StudentOrderMapper studentOrderMapper;
+    
+    @Autowired
+    private StudentClassMapper studentClassMapper;
 
     @Override
     public List<Student> getAllActiveStudents() {
@@ -80,12 +86,14 @@ public class StudentServiceImpl implements StudentService {
             
             // 获取学生信息并检查积分
             Student student = studentMapper.selectByPrimaryKey(stuId);
-            if (student == null || student.getStuScore() < coursePrice) {
+            // 价格转换为积分：1元 = 10积分
+            Long pointsRequired = coursePrice * 10;
+            if (student == null || student.getStuScore() < pointsRequired) {
                 return false; // 积分不足
             }
             
             // 扣除积分
-            student.setStuScore(student.getStuScore() - coursePrice);
+            student.setStuScore(student.getStuScore() - pointsRequired);
             int updateResult = studentMapper.updateByPrimaryKey(student);
             if (updateResult <= 0) {
                 return false;
@@ -95,7 +103,7 @@ public class StudentServiceImpl implements StudentService {
             StudentOrder order = new StudentOrder();
             order.setCode("ORDER_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8));
             order.setStuId(stuId);
-            order.setAmount(coursePrice);
+            order.setAmount(coursePrice); // 存储实际课程价格
             
             int orderResult = studentOrderMapper.insert(order);
             if (orderResult <= 0) {
@@ -194,6 +202,26 @@ public class StudentServiceImpl implements StudentService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    @Override
+    public List<TrainingClass> getClassesByStudentId(Long studentId) {
+        try {
+            return studentClassMapper.findClassesByStudentId(studentId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+    
+    @Override
+    public List<Course> getClassCoursesByStudentId(Long studentId) {
+        try {
+            return studentClassMapper.findClassCoursesByStudentId(studentId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
         }
     }
 }

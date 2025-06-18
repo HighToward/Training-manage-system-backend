@@ -47,6 +47,10 @@
         <if test="couName != null and couName != ''">
             and cou_name like concat('%', #{couName,jdbcType=VARCHAR}, '%')
         </if>
+        <if test="keyword != null and keyword != ''">
+            and (cou_name like concat('%', #{keyword,jdbcType=VARCHAR}, '%') 
+                 or cou_introduction like concat('%', #{keyword,jdbcType=VARCHAR}, '%'))
+        </if>
         <if test="couTypeIds != null and couTypeIds.size() > 0">
             <choose>
                 <when test="couTypeIds.size() == 1">
@@ -69,6 +73,10 @@
         where deleted = 0
         <if test="couName != null and couName != ''">
             and cou_name like concat('%', #{couName,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="keyword != null and keyword != ''">
+            and (cou_name like concat('%', #{keyword,jdbcType=VARCHAR}, '%') 
+                 or cou_introduction like concat('%', #{keyword,jdbcType=VARCHAR}, '%'))
         </if>
         <if test="couTypeIds != null and couTypeIds.size() > 0">
             <choose>
@@ -117,6 +125,28 @@
             update_time = now()
         where id = #{courseId}
     </update>
+    
+    <select id="selectCourseById" resultType="java.util.Map">
+        select 
+            c.id as couId,
+            c.cou_name as couName,
+            c.cou_introduction as couIntroduction,
+            c.cou_pic as couPic,
+            c.cou_price as couPrice,
+            c.cou_type_id as couTypeId,
+            c.cou_par_type_id as couParTypeId,
+            c.cou_cata_num as couCataNum,
+            c.cou_coll_num as couCollNum,
+            c.cou_like_num as couLikeNum,
+            c.clicks as clicks,
+            c.purchase as purchase,
+            t.tea_name as teaName,
+            ct.type_name as typeName
+        from course c
+        left join teacher t on c.tea_id = t.id
+        left join course_type ct on c.cou_type_id = ct.id
+        where c.id = #{courseId} and c.deleted = 0
+    </select>
 
     <update id="deleteByPrimaryKey" parameterType="java.lang.Long">
         update course

@@ -16,6 +16,14 @@ public interface StudentCourseCartService {
     boolean addToCart(Long stuId, Long couId);
     
     /**
+     * 添加课程到购物车并返回详细信息
+     * @param stuId 学生ID
+     * @param couId 课程ID
+     * @return 包含操作结果和课程信息的Map
+     */
+    Map<String, Object> addToCartWithDetails(Long stuId, Long couId);
+    
+    /**
      * 从购物车移除课程
      * @param stuId 学生ID
      * @param couId 课程ID

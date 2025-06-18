@@ -66,14 +66,22 @@
             c.cou_name as couName,
             c.cou_pic as couPic,
             c.cou_price as couPrice,
-            c.tea_name as teaName,
+            t.tea_name as teaName,
             c.cou_introduction as couIntroduction,
-            c.type_name as typeName
+            ct.type_name as typeName
         from student_course_cart scc
         inner join course c on scc.cou_id = c.id
+        inner join teacher t on c.tea_id = t.id
+        left join course_type ct on c.cou_type_id = ct.id
         where scc.stu_id = #{stuId,jdbcType=BIGINT}
         and scc.deleted = 0
         and c.deleted = 0
+        and t.deleted = 0
+        and not exists (
+            select 1 from student_course sc 
+            where sc.stu_id = scc.stu_id 
+            and sc.cou_id = scc.cou_id
+        )
         order by scc.create_time desc
     </select>
 

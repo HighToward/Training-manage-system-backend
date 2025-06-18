@@ -37,4 +37,48 @@
         where class_id = #{classId,jdbcType=BIGINT}
     </select>
 
+    <delete id="deleteByStudentIdAndClassId">
+        delete from student_class
+        where stu_id = #{stuId,jdbcType=BIGINT} and class_id = #{classId,jdbcType=BIGINT}
+    </delete>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from student_class where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <select id="selectByPrimaryKey" resultMap="StudentClassResultMap" parameterType="java.lang.Long">
+        select id, stu_id, class_id, create_time, update_time
+        from student_class
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="selectAll" resultMap="StudentClassResultMap">
+        select id, stu_id, class_id, create_time, update_time
+        from student_class
+    </select>
+
+    <update id="updateByPrimaryKey" parameterType="com.company.training.entity.StudentClass">
+        update student_class
+        set stu_id = #{stuId,jdbcType=BIGINT},
+            class_id = #{classId,jdbcType=BIGINT},
+            update_time = NOW()
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <select id="findClassesByStudentId" resultMap="com.company.training.mapper.TrainingClassMapper.BaseResultMap" parameterType="java.lang.Long">
+        select tc.id, tc.class_name, tc.class_stu_num, tc.deleted, tc.create_time, tc.update_time
+        from class tc
+        inner join student_class sc on tc.id = sc.class_id
+        where sc.stu_id = #{studentId,jdbcType=BIGINT} and tc.deleted = 0
+    </select>
+
+    <select id="findClassCoursesByStudentId" resultMap="com.company.training.mapper.CourseMapper.BaseResultMap" parameterType="java.lang.Long">
+        select distinct c.id, c.course_name, c.course_pic, c.course_price, c.course_description, 
+               c.course_type, c.teacher_id, c.create_time, c.update_time, c.deleted
+        from course c
+        inner join class_course cc on c.id = cc.course_id
+        inner join student_class sc on cc.class_id = sc.class_id
+        where sc.stu_id = #{studentId,jdbcType=BIGINT} and c.deleted = 0
+    </select>
+
 </mapper>

@@ -4,13 +4,13 @@ import com.company.training.service.StudentCourseCartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cart")
-@CrossOrigin(origins = "*")
 public class StudentCourseCartController {
     
     @Autowired
@@ -27,15 +27,16 @@ public class StudentCourseCartController {
             Long stuId = Long.valueOf(params.get("stuId").toString());
             Long couId = Long.valueOf(params.get("couId").toString());
             
-            boolean success = cartService.addToCart(stuId, couId);
+            Map<String, Object> addResult = cartService.addToCartWithDetails(stuId, couId);
             
-            if (success) {
+            if ((Boolean) addResult.get("success")) {
                 result.put("success", true);
                 result.put("message", "添加到购物车成功");
                 result.put("cartCount", cartService.getCartCount(stuId));
+                result.put("courseInfo", addResult.get("courseInfo"));
             } else {
                 result.put("success", false);
-                result.put("message", "添加失败，课程可能已在购物车中或已购买");
+                result.put("message", addResult.get("message"));
             }
             
         } catch (Exception e) {
@@ -203,11 +204,30 @@ public class StudentCourseCartController {
     @PostMapping("/checkout")
     public Map<String, Object> checkoutCart(@RequestBody Map<String, Object> params) {
         try {
-            Long stuId = Long.valueOf(params.get("stuId").toString());
-            @SuppressWarnings("unchecked")
-            List<Long> couIds = (List<Long>) params.get("couIds");
+            System.out.println("=== 购物车结算请求参数 ===");
+            System.out.println("接收到的参数: " + params);
             
-            return cartService.checkoutCart(stuId, couIds);
+            Long stuId = Long.valueOf(params.get("stuId").toString());
+            System.out.println("学生ID: " + stuId);
+            
+            // 安全地解析couIds，处理不同的数据类型
+            @SuppressWarnings("unchecked")
+            List<Object> couIdsObj = (List<Object>) params.get("couIds");
+            List<Long> couIds = new ArrayList<>();
+            if (couIdsObj != null) {
+                for (Object obj : couIdsObj) {
+                    if (obj instanceof Number) {
+                        couIds.add(((Number) obj).longValue());
+                    } else {
+                        couIds.add(Long.valueOf(obj.toString()));
+                    }
+                }
+            }
+            System.out.println("课程ID列表: " + couIds);
+            
+            Map<String, Object> result = cartService.checkoutCart(stuId, couIds);
+            System.out.println("结算结果: " + result);
+            return result;
             
         } catch (Exception e) {
             e.printStackTrace();
